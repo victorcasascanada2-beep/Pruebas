@@ -1,48 +1,53 @@
+import streamlit as st
 import google.generativeai as genai
-import typing_extensions as typing
+from PIL import Image
 
-# Configuración de la API
-genai.configure(api_key="TU_API_KEY")
+# Configuración de la página para móvil
+st.set_page_config(page_title="Tasador Pro", layout="centered")
 
-# Definimos la estructura obligatoria de la tasación
-class TasacionMaquinaria(typing.TypedDict):
-    marca_modelo: str
-    estado_general: str  # (Excelente, Bueno, Regular, Desgastado)
-    valor_estimado_euros: int
-    justificacion_precio: str
-    reparaciones_detectadas: list[str]
-    campos_completos: bool # Para verificar obligatoriedad
+# Acceder a la clave de forma segura
+# (Debes configurarla en 'Settings' -> 'Secrets' de Streamlit Cloud)
+api_key = st.secrets["GOOGLE_API_KEY"]
+genai.configure(api_key=api_key)
 
-# Inicializamos el modelo con la configuración de salida
-model = genai.GenerativeModel(
-    model_name="gemini-1.5-flash", # O gemini-2.0-flash si ya está disponible en tu región
-    generation_config={
-        "response_mime_type": "application/json",
-        "response_schema": TasacionMaquinaria
-    }
-)
+st.title("🚜 Tasador de Maquinaria")
 
-# Definimos la lógica de tasación
-def tasar_maquinaria(ruta_imagen, horas_reparacion, coste_reparacion):
-    # Cargamos la imagen (previamente guardada para la vista previa)
-    foto_tractor = genai.upload_file(path=ruta_imagen)
+# Formulario para asegurar campos obligatorios
+with st.form("tasacion_form"):
+    st.subheader("Datos de la Máquina")
     
-    prompt = f"""
-    Analiza la imagen de este tractor y tásalo profesionalmente. 
-    Datos conocidos: 
-    - Se le han invertido {horas_reparacion} horas de trabajo técnico.
-    - El coste de las piezas y reparaciones recientes asciende a {coste_reparacion} euros.
+    # Subida de foto con vista previa pequeña como pediste
+    foto = st.file_uploader("Captura o sube foto del tractor", type=['jpg', 'png', 'jpeg'])
     
-    INSTRUCCIONES:
-    1. Identifica marca y modelo si es visible.
-    2. Evalúa el estado exterior a partir de la foto.
-    3. Suma el valor de la inversión de {coste_reparacion}€ al valor base de mercado.
-    4. Todos los campos del JSON son OBLIGATORIOS.
-    """
+    if foto:
+        st.image(foto, caption="Vista previa", width=200) # Miniatura
+        
+    # Campos obligatorios
+    horas_reparacion = st.number_input("Horas de reparación", min_value=1, value=100)
+    coste_reparacion = st.number_input("Inversión en euros (€)", min_value=0, value=10000)
     
-    response = model.generate_content([prompt, foto_tractor])
-    return response.text
+    submit_button = st.form_submit_button("Realizar Tasación")
 
-# Ejemplo de uso
-# resultado = tasar_maquinaria("tractor_front.jpg", 100, 10000)
-# print(resultado)
+if submit_button:
+    if not foto:
+        st.error("⚠️ La foto es obligatoria para tasar.")
+    else:
+        with st.spinner("Analizando con Gemini 2.5 Flash..."):
+            try:
+                model = genai.GenerativeModel('gemini-1.5-flash')
+                img = Image.open(foto)
+                
+                prompt = f"""
+                Tasa esta máquina considerando:
+                - Inversión reciente: {coste_reparacion}€
+                - Mano de obra: {horas_reparacion} horas.
+                Dime: Marca, Modelo, Estado y Valor de Mercado.
+                """
+                
+                response = model.generate_content([prompt, img])
+                
+                st.success("### Resultado de la Tasación")
+                st.write(response.text)
+                
+            except Exception as e:
+                st.error(f"Error: {e}")
