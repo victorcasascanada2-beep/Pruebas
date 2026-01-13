@@ -1,6 +1,6 @@
 
 google-generativeai
 streamlit
-pillow
+Pillow
 
 
