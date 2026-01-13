@@ -60,7 +60,7 @@ if st.button("🚀 REALIZAR TASACIÓN"):
             if i == 80: txt_estado.text("⚖️ Ajustando tasación a la baja...")
 
         try:
-            model = genai.GenerativeModel('gemini-1.5-flash') # Usamos 1.5 que es más estable
+            model = genai.GenerativeModel('gemini-2.5-flash') # Usamos 1.5 que es más estable
             
             # Prompt optimizado
             prompt = f"""
