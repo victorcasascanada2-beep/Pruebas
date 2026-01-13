@@ -3,14 +3,12 @@ import google.generativeai as genai
 from PIL import Image
 import time
 
-# 1. Configuración de la API
+# 1. Configuración de la API con el modelo que me indicaste
 genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 
-# NOTA: Hemos quitado set_page_config para evitar el error de ayer
 st.title("🚜 Peritaje Profesional V2.0")
 
 # --- FORMULARIO DE DATOS ---
-# Usamos columnas simples para Marca, Modelo y Año
 c1, c2, c3 = st.columns(3)
 with c1:
     marca = st.text_input("Marca*", key="marca")
@@ -19,60 +17,65 @@ with c2:
 with c3:
     anio = st.text_input("Año*", key="anio")
 
-observaciones = st.text_area("Incidencias y Extras", placeholder="Ej: Pala, averías, pintura...")
+observaciones = st.text_area("Incidencias y Extras", placeholder="Ej: Pala, averías, pintura saltada, estado de neumáticos...")
 
 st.divider()
 
-# --- SUBIDA DE FOTOS ---
-st.subheader("Fotografías (Mínimo 5)")
-fotos_subidas = st.file_uploader("Sube tus fotos aquí", type=['jpg', 'jpeg', 'png'], accept_multiple_files=True)
+# --- SUBIDA DE FOTOS (SIN NOTAS) ---
+st.subheader("Fotografías (Mínimo 5, Máximo 10)")
+fotos_subidas = st.file_uploader("Sube las fotos de la máquina", type=['jpg', 'jpeg', 'png'], accept_multiple_files=True)
 
-comentarios = []
-
-# Cambiamos la lógica de las columnas por una lista simple para evitar el TypeError
 if fotos_subidas:
     if len(fotos_subidas) > 10:
-        st.error("Máximo 10 fotos.")
+        st.error("Máximo 10 fotos permitidas.")
     else:
+        # Mostramos una vista previa rápida de las fotos subidas
+        cols = st.columns(5)
         for i, foto in enumerate(fotos_subidas):
-            st.image(foto, width=200) # Imagen pequeña para no ocupar toda la pantalla
-            nota = st.text_input(f"Nota para foto {i+1} (máx 4 líneas)", key=f"nota_{i}")
-            comentarios.append(nota)
+            with cols[i % 5]:
+                st.image(foto, use_column_width=True)
 
 st.divider()
 
-# --- BOTÓN Y LÓGICA ---
-if st.button("🚀 REALIZAR TASACIÓN"):
+# --- BOTÓN Y LÓGICA DE TASACIÓN ---
+if st.button("🚀 REALIZAR TASACIÓN PROFESIONAL"):
     if not marca or not modelo or not anio:
-        st.warning("⚠️ Rellena Marca, Modelo y Año.")
+        st.warning("⚠️ Marca, Modelo y Año son obligatorios.")
     elif len(fotos_subidas) < 5:
-        st.warning("⚠️ Sube al menos 5 fotos.")
+        st.warning("⚠️ Sube al menos 5 fotos para un análisis detallado.")
     else:
-        # Barra de progreso
+        # Barra de progreso para amenizar la espera
         barra = st.progress(0)
         txt_estado = st.empty()
         
         for i in range(1, 101):
             time.sleep(0.02)
             barra.progress(i)
-            if i == 20: txt_estado.text("🔎 Analizando estado visual...")
-            if i == 50: txt_estado.text("📊 Consultando precios de compra profesional...")
-            if i == 80: txt_estado.text("⚖️ Ajustando tasación a la baja...")
+            if i == 20: txt_estado.text("🔎 Analizando visualmente cada fotografía...")
+            if i == 50: txt_estado.text("📊 Consultando precios de compra en mercado europeo...")
+            if i == 80: txt_estado.text("⚖️ Ajustando valoración final de compra...")
 
         try:
-            model = genai.GenerativeModel('gemini-2.5-flash') # Usamos 1.5 que es más estable
+            # Usando gemini-2.5-flash como recordaste
+            model = genai.GenerativeModel('gemini-2.5-flash')
             
-            # Prompt optimizado
             prompt = f"""
-            Actúa como tasador para un compra-venta. 
-            DATOS: Marca {marca}, Modelo {modelo}, Año {anio}.
-            NOTAS DEL PERITO: {observaciones}.
-            NOTAS DE FOTOS: {comentarios}.
+            Actúa como un tasador experto para un concesionario de compra-venta.
             
-            TAREA:
-            1. Valor de COMPRA (lo que debemos pagar nosotros por ella).
-            2. Extraer Nº Serie si se ve.
-            3. Ser muy breve (4-5 líneas máximo).
+            DATOS SUMINISTRADOS:
+            - Marca: {marca}
+            - Modelo: {modelo}
+            - Año: {anio}
+            - Notas adicionales: {observaciones}
+            
+            TU TAREA:
+            1. Analiza DETALLADAMENTE cada una de las fotos enviadas.
+            2. Menciona en el informe qué has visto en las imágenes (estado de neumáticos, posibles fugas, desgaste de cabina, estado de la pintura, etc.).
+            3. Extrae el Número de Serie si aparece en alguna placa.
+            4. Calcula un PRECIO DE COMPRA PROFESIONAL (lo que pagaríamos nosotros por la máquina). 
+               El precio debe ser realista, ajustado a mercado profesional y TIRANDO A LA BAJA para asegurar margen.
+            
+            ESTILO: Directo y profesional. No des la bienvenida ni uses relleno.
             """
             
             contenido = [prompt]
@@ -80,8 +83,10 @@ if st.button("🚀 REALIZAR TASACIÓN"):
                 contenido.append(Image.open(f))
             
             res = model.generate_content(contenido)
-            st.success("Tasación Finalizada")
+            
+            st.success("✅ Peritaje Finalizado")
+            st.subheader("Informe de Tasación")
             st.markdown(res.text)
             
         except Exception as e:
-            st.error(f"Fallo en la IA: {e}")
+            st.error(f"Error en el motor Gemini 2.5: {e}")
