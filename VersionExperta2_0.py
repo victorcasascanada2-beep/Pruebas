@@ -8,7 +8,92 @@ genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 
 st.title("🚜 Peritaje Profesional V2.0")
 
+# --- FORMULARIO DE DATOS ---import streamlit as st
+import google.generativeai as genai
+from PIL import Image
+import time
+
+# 1. Configuración con el modelo recordado
+genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
+
+st.title("🚜 Peritaje Profesional V2.0")
+
 # --- FORMULARIO DE DATOS ---
+c1, c2, c3 = st.columns(3)
+with c1:
+    marca = st.text_input("Marca*", key="marca")
+with c2:
+    modelo = st.text_input("Modelo*", key="modelo")
+with c3:
+    anio = st.text_input("Año*", key="anio")
+
+observaciones = st.text_area("Incidencias y Extras", placeholder="Ej: Pala, averías, pintura saltada...")
+
+st.divider()
+
+# --- SUBIDA DE FOTOS ---
+st.subheader("Fotografías (Mínimo 5, Máximo 10)")
+fotos_subidas = st.file_uploader("Sube las fotos de la máquina", type=['jpg', 'jpeg', 'png'], accept_multiple_files=True)
+
+if fotos_subidas:
+    if len(fotos_subidas) > 10:
+        st.error("Máximo 10 fotos permitidas.")
+    else:
+        # Mostramos cuadrícula de previsualización
+        cols = st.columns(5)
+        for i, foto in enumerate(fotos_subidas):
+            with cols[i % 5]:
+                # Actualizado a width='stretch' para cumplir con el log de Streamlit 2026
+                st.image(foto, width='stretch')
+
+st.divider()
+
+# --- LÓGICA DE TASACIÓN CON HORQUILLA ---
+if st.button("🚀 REALIZAR TASACIÓN PROFESIONAL"):
+    if not marca or not modelo or not anio:
+        st.warning("⚠️ Marca, Modelo y Año son obligatorios.")
+    elif len(fotos_subidas) < 5:
+        st.warning("⚠️ Sube al menos 5 fotos para el análisis visual.")
+    else:
+        barra = st.progress(0)
+        txt_estado = st.empty()
+        
+        for i in range(1, 101):
+            time.sleep(0.02)
+            barra.progress(i)
+            if i == 20: txt_estado.text("🔎 Analizando detalles en cada fotografía...")
+            if i == 60: txt_estado.text("📊 Comparando mercado europeo y calculando horquilla...")
+
+        try:
+            # Motor recordado: 2.5-flash
+            model = genai.GenerativeModel('gemini-2.5-flash')
+            
+            prompt = f"""
+            Actúa como un perito tasador senior de maquinaria agrícola.
+            
+            DATOS: {marca} {modelo} ({anio}). 
+            NOTAS: {observaciones}.
+            
+            INSTRUCCIONES CRÍTICAS:
+            1. ANÁLISIS VISUAL: Describe lo que ves en las fotos (desgastes, estado de cabina, neumáticos, etc.) para justificar el precio.
+            2. PRECIO DE COMPRA (NO VENTA): Calcula un valor de captación para el concesionario.
+            3. HORQUILLA DEL 15%: Presenta un rango de precios (Mínimo y Máximo) donde la diferencia sea del 15%. 
+               Ejemplo: Si el valor es 100, el rango es [92.5 - 107.5].
+            4. TONO: Profesional y realista. La oferta debe ser competitiva para no perder al cliente, pero dejando margen de negocio.
+            5. Nº SERIE: Extráelo si la placa es visible.
+            """
+            
+            contenido = [prompt]
+            for f in fotos_subidas:
+                contenido.append(Image.open(f))
+            
+            res = model.generate_content(contenido)
+            
+            st.success("✅ Informe Generado")
+            st.markdown(res.text)
+            
+        except Exception as e:
+            st.error(f"Error en la comunicación con Gemini 2.5: {e}")
 c1, c2, c3 = st.columns(3)
 with c1:
     marca = st.text_input("Marca*", key="marca")try:
