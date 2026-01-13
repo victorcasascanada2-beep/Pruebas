@@ -11,7 +11,41 @@ st.title("🚜 Peritaje Profesional V2.0")
 # --- FORMULARIO DE DATOS ---
 c1, c2, c3 = st.columns(3)
 with c1:
-    marca = st.text_input("Marca*", key="marca")
+    marca = st.text_input("Marca*", key="marca")try:
+            # Usando gemini-2.5-flash según tus instrucciones
+            model = genai.GenerativeModel('gemini-2.5-flash')
+            
+            prompt = f"""
+            Actúa como un tasador senior de maquinaria agrícola. 
+            
+            DATOS DE LA MÁQUINA:
+            - Marca: {marca} | Modelo: {modelo} | Año: {anio}
+            - Notas: {observaciones}
+            
+            TU TAREA:
+            1. ANALIZA LAS FOTOS: Describe brevemente los puntos clave detectados (estado de la cabina, motor, neumáticos, posibles daños visibles).
+            2. VALORACIÓN DE MERCADO: Busca el valor medio de este modelo en el mercado europeo de ocasión.
+            3. OFERTA DE COMPRA (HORQUILLA): Calcula una oferta de compra profesional que sea realista para el concesionario.
+               - Debes ofrecer un RANGO de precios (mínimo y máximo) con una diferencia aproximada del 15% entre ellos.
+               - El precio debe ser "de compra", no de venta al público, pero debe ser una oferta seria y no insultante para el cliente.
+            4. Nº SERIE: Extráelo de la placa si es visible.
+
+            FORMATO DE RESPUESTA:
+            - Análisis visual (por fotos)
+            - Puntos positivos/negativos encontrados
+            - Horquilla de compra sugerida: [Mínimo € - Máximo €]
+            - Justificación breve del rango.
+            """
+            
+            contenido = [prompt]
+            for f in fotos_subidas:
+                contenido.append(Image.open(f))
+            
+            res = model.generate_content(contenido)
+            
+            st.success("✅ Peritaje Finalizado")
+            st.subheader("Informe de Tasación con Horquilla de Valor")
+            st.markdown(res.text)
 with c2:
     modelo = st.text_input("Modelo*", key="modelo")
 with c3:
