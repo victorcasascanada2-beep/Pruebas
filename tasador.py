@@ -2,7 +2,7 @@ import streamlit as st
 import os
 
 # 1. Nombre del archivo que quieres arrancar (CON el .py esta vez)
-VERSION_ACTIVA = "VersionEstable1_0.py" 
+VERSION_ACTIVA = "VersionExperta2_0.py" 
 
 def lanzar_version(archivo):
     if os.path.exists(archivo):
