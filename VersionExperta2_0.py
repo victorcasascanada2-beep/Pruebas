@@ -60,15 +60,32 @@ if st.button("🚀 REALIZAR TASACIÓN"):
             # Motor 2.5-flash como solicitaste
             model = genai.GenerativeModel('gemini-2.5-flash')
             
-            prompt = f"""
+            prompt =f"""
+            Actúa como un tasador senior de maquinaria agrícola basado en mercado real europeo.
+            
+            DATOS DE LA MÁQUINA:
+            - Modelo: {marca} {modelo}
+            - Año: {anio}
+            - Notas y Objetivos: {observaciones}
+            
+            INSTRUCCIONES DE VALORACIÓN:
+            1. BÚSQUEDA DE HORQUILLA: Localiza el rango de precios reales de anuncios en portales europeos (España, Francia, Alemania) para este modelo y año exacto.
+            2. ANÁLISIS DE FOTOS Y EXTRAS: Identifica las 'bondades' (Tripuntal, GPS, Transmisión AutoPower/Vario, anclajes de pala, estado de neumáticos).
+            3. POSICIONAMIENTO: 
+               - Si la unidad tiene extras potentes o está en estado impecable, sitúa el precio cerca del MÁXIMO de la horquilla encontrada.
+               - Si la unidad es básica o presenta desgastes visibles, sitúa el precio en la parte BAJA de la horquilla.
+            4. CONTEXTO: Si en las notas se indica 'Venta', ofrece el valor de mercado para cliente final. Si indica 'Compra', ofrece una valoración profesional de captación.
+            
+            5. ANALIZA LAS FOTOS: Menciona qué ves en ellas (neumáticos, cabina, posibles fallos).
+            6. Estilo profesional, directo y realista para captación.
+            REGLAS ESTRICTAS:
+            - PROHIBIDO usar fórmulas matemáticas lineales de euros por hora.
+            - PROHIBIDO mencionar descuentos comerciales del 10% o márgenes internos.
+            - Justifica el precio final basándote en las bondades detectadas vs lo que hay anunciado en Internet.
             Actúa como tasador para un compra-venta profesional. 
             DATOS: Marca {marca}, Modelo {modelo}, Año {anio}, Horas {horas}.
             NOTAS: {observaciones}.
             
-            TAREA:
-            1. ANALIZA LAS FOTOS: Menciona qué ves en ellas (neumáticos, cabina, posibles fallos).
-            2. VALOR DE COMPRA: Calcula una horquilla de precios (Mínimo - Máximo) con un margen del 15% entre ellos.
-            3. Estilo profesional, directo y realista para captación.
             """
             
             contenido = [prompt]
