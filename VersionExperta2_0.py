@@ -60,32 +60,31 @@ if st.button("🚀 REALIZAR TASACIÓN"):
             # Motor 2.5-flash como solicitaste
             model = genai.GenerativeModel('gemini-2.5-flash')
             
-            prompt =f"""
-            Actúa como un tasador senior de maquinaria agrícola basado en mercado real europeo.
-            
-            DATOS DE LA MÁQUINA:
-            - Modelo: {marca} {modelo}
-            - Año: {anio}
-            - Notas y Objetivos: {observaciones}
-            
-            INSTRUCCIONES DE VALORACIÓN:
-            1. BÚSQUEDA DE HORQUILLA: Localiza el rango de precios reales de anuncios en portales europeos (España, Francia, Alemania) para este modelo y año exacto.
-            2. ANÁLISIS DE FOTOS Y EXTRAS: Identifica las 'bondades' (Tripuntal, GPS, Transmisión AutoPower/Vario, anclajes de pala, estado de neumáticos).
-            3. POSICIONAMIENTO: 
-               - Si la unidad tiene extras potentes o está en estado impecable, sitúa el precio cerca del MÁXIMO de la horquilla encontrada.
-               - Si la unidad es básica o presenta desgastes visibles, sitúa el precio en la parte BAJA de la horquilla.
-            4. CONTEXTO: Si en las notas se indica 'Venta', ofrece el valor de mercado para cliente final. Si indica 'Compra', ofrece una valoración profesional de captación.
-            
-            5. ANALIZA LAS FOTOS: Menciona qué ves en ellas (neumáticos, cabina, posibles fallos).
-            6. Estilo profesional, directo y realista para captación.
-            REGLAS ESTRICTAS:
-            - PROHIBIDO usar fórmulas matemáticas lineales de euros por hora.
-            - PROHIBIDO mencionar descuentos comerciales del 10% o márgenes internos.
-            - Justifica el precio final basándote en las bondades detectadas vs lo que hay anunciado en Internet.
-            Actúa como tasador para un compra-venta profesional. 
-            DATOS: Marca {marca}, Modelo {modelo}, Año {anio}, Horas {horas}.
-            NOTAS: {observaciones}.
-            
+           # --- PROMPT DE POSICIONAMIENTO GLOBAL CON ENFOQUE ESPAÑA ---
+            prompt = f"""
+            Actúa como un experto en valoración de activos agrícolas con acceso a mercados internacionales.
+            Tu misión es tasar un {marca} {modelo} ({anio}) con {horas} horas.
+
+            DATOS DE LA UNIDAD:
+            - Identificación: {marca} {modelo} | Año: {anio} | Horas: {horas}
+            - Equipamiento y Estado: {observaciones}
+
+            ESTRATEGIA DE BÚSQUEDA (MULTIDOMINIO):
+            1. RASTREO EN ESPAÑA: Busca en Milanuncios y Agriaffaires.es para establecer el precio de mercado nacional (PVP).
+            2. CONTRASTE EUROPEO: Busca en Traktorpool, Mascus y Truck1 (Alemania, Francia, Italia).
+            3. ANÁLISIS DE LA OFERTA: 
+               - Si en España hay escasez, usa los precios de Europa como base y añade un plus por disponibilidad inmediata y ahorro de importación.
+               - Identifica el 'Suelo' (unidades básicas o con muchas horas) y el 'Techo' (unidades con motor reparado, garantía oficial o Full Equip).
+
+            LÓGICA DE POSICIONAMIENTO POR BONDADES:
+            - POSICIONAMIENTO: Sitúa la unidad en la horquilla basándote en extras: Tripuntal, Frenos de aire, estado de neumáticos (>70%) y tipo de transmisión.
+            - FACTOR MOTOR REPARADO: Si detectas anuncios de 93k con motor hecho, úsalos como referencia de 'unidad renovada', pero prioriza el valor de horas reales de chasis si estas son bajas (<7.000h).
+            - PROHIBIDO: No menciones porcentajes de descuento internos ni uses reglas fijas de euros/hora. Todo debe ser comparativo entre anuncios reales.
+
+            SALIDA DE DATOS:
+            - Horquilla de Mercado Nacional e Internacional.
+            - Lista de 'Bondades' que justifican el precio (por qué sube o por qué baja respecto a la media).
+            - Precio Final Sugerido basado en el objetivo de {observaciones} (Compra/Venta).
             """
             
             contenido = [prompt]
