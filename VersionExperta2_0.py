@@ -51,7 +51,7 @@ if st.button("🚀 REALIZAR TASACIÓN"):
         txt_estado = st.empty()
         
         for i in range(1, 101):
-            time.sleep(0.08)
+            time.sleep(1,5)
             barra.progress(i)
             if i == 30: txt_estado.text("🔎 Analizando estado visual...")
             if i == 70: txt_estado.text("📊 Calculando horquilla de mercado...")
