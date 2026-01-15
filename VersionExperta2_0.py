@@ -79,7 +79,7 @@ if st.button("🚀 FINALIZAR Y ENVIAR A CENTRAL"):
     else:
         try:
             # Usamos Gemini 2.5 Flash para el análisis
-            model = genai.GenerativeModel('gemini-2.0-flash') # Cambiar a 2.5 si ya tienes acceso
+            model = genai.GenerativeModel('gemini-2.5-flash') # Cambiar a 2.5 si ya tienes acceso
             
             with st.spinner('Analizando y enviando informe...'):
                 # 1. IA analiza fotos y datos
