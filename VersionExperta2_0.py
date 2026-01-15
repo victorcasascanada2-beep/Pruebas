@@ -2,33 +2,44 @@ import streamlit as st
 from fpdf import FPDF
 import google.generativeai as genai
 from PIL import Image
-import datetime
 
 # 1. CONFIGURACIÓN
 genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 
 def limpiar_texto_para_pdf(texto):
-    """Limpia caracteres raros para que el PDF no falle"""
-    texto = texto.replace('€', 'Euros').replace('**', '').replace('*', '')
+    """
+    Limpia el texto para que FPDF no falle al generar el PDF.
+    Sustituye símbolos y asegura codificación latin-1.
+    """
+    # Cambios básicos de símbolos
+    texto = texto.replace('€', 'Euros').replace('**', '').replace('*', '-')
+    
+    # Manejo de acentos y caracteres especiales para evitar errores de codificación
+    texto = texto.replace('á', 'a').replace('é', 'e').replace('í', 'i').replace('ó', 'o').replace('ú', 'u')
+    texto = texto.replace('ñ', 'n').replace('Á', 'A').replace('É', 'E').replace('Í', 'I').replace('Ó', 'O').replace('Ú', 'U')
+    
+    # Retornamos el texto codificado de forma segura
     return texto.encode('latin-1', 'replace').decode('latin-1')
 
-# 2. INTERFAZ SIMPLE PARA PRUEBAS
-st.title("🚜 Test de Generación PDF - V2.0")
+# 2. INTERFAZ DE USUARIO
+st.set_page_config(page_title="Test PDF Pro", layout="centered")
+st.title("🚜 Generador de Informes PDF")
 
-marca = st.text_input("Marca")
-modelo = st.text_input("Modelo")
-fotos = st.file_uploader("Sube fotos para activar el proceso", accept_multiple_files=True)
+marca = st.text_input("Marca del tractor", placeholder="Ej: John Deere")
+modelo = st.text_input("Modelo", placeholder="Ej: 6155M")
+fotos = st.file_uploader("Sube fotos para el peritaje", accept_multiple_files=True)
 
-if st.button("🚀 PROBAR GENERACIÓN"):
-    if not fotos:
-        st.error("Sube al menos una foto para la prueba.")
+if st.button("🚀 GENERAR TASACIÓN Y PDF"):
+    if not fotos or not marca:
+        st.error("⚠️ Por favor, introduce la marca y sube alguna foto.")
     else:
         try:
+            # Motor Gemini 2.5 Flash
             model = genai.GenerativeModel('gemini-2.5-flash')
             
-            with st.spinner('Generando respuesta de prueba...'):
-                # Redimensionamos para evitar el error de cuota 429
-                lista_ia = ["Haz un resumen corto de este tractor y crea una tabla de precios ficticia."]
+            with st.spinner('Analizando maquinaria...'):
+                # Redimensionamos fotos para optimizar la cuota
+                lista_ia = [f"Haz un informe técnico del tractor {marca} {modelo}."]
                 for f in fotos:
                     img = Image.open(f)
                     img.thumbnail((800, 800))
@@ -36,32 +47,37 @@ if st.button("🚀 PROBAR GENERACIÓN"):
                 
                 res = model.generate_content(lista_ia)
 
-            # --- MOSTRAR EN APP ---
-            st.markdown(res.text)
+            # Mostrar resultado en la App
+            st.markdown("### Vista Previa del Informe")
+            st.info(res.text)
 
-            # --- CREAR EL PDF ---
+            # --- CONSTRUCCIÓN DEL PDF ---
             pdf = FPDF()
             pdf.add_page()
+            
+            # Título
             pdf.set_font("Arial", 'B', 16)
-            pdf.cell(190, 10, txt="INFORME DE PRUEBA", ln=True, align='C')
+            pdf.cell(190, 10, txt=f"INFORME DE TASACION: {marca.upper()}", ln=True, align='C')
             pdf.ln(10)
             
+            # Contenido
             pdf.set_font("Arial", size=11)
-            # Pasamos el texto por la limpieza antes de escribir
-            texto_listo = limpiar_texto_para_pdf(res.text)
-            pdf.multi_cell(0, 7, txt=texto_listo)
+            texto_limpio = limpiar_texto_para_pdf(res.text)
+            pdf.multi_cell(0, 7, txt=texto_limpio)
 
-            # --- LA DESCARGA (CORREGIDO) ---
-            # En las versiones nuevas de fpdf2, esto ya devuelve bytes
-            pdf_bytes = (pdf.output())
+            # --- CONVERSIÓN A BYTES (SOLUCIÓN AL ERROR) ---
+            # Forzamos la conversión de bytearray a bytes inmutables
+            pdf_output = pdf.output()
+            pdf_bytes = bytes(pdf_output) 
             
+            # --- BOTÓN DE DESCARGA ---
             st.download_button(
-                label="📥 DESCARGAR PDF DE PRUEBA",
+                label="📥 DESCARGAR INFORME PDF",
                 data=pdf_bytes,
-                file_name="test_tasacion.pdf",
+                file_name=f"Tasacion_{marca}.pdf",
                 mime="application/pdf"
             )
-            st.success("¡PDF generado! Dale al botón de arriba para descargarlo.")
+            st.success("✅ PDF generado correctamente.")
 
         except Exception as e:
-            st.error(f"Error detectado: {e}")
+            st.error(f"❌ Error detectado: {e}")
