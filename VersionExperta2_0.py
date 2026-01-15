@@ -1,83 +1,129 @@
 import streamlit as st
-from fpdf import FPDF
 import google.generativeai as genai
 from PIL import Image
+import base64
+from io import BytesIO
+from googleapiclient.discovery import build
+from google.oauth2 import service_account
+from googleapiclient.http import MediaIoBaseUpload
+import datetime
 
+# ==========================================
 # 1. CONFIGURACIÓN
+# ==========================================
+# Tu clave de Gemini guardada en Streamlit Secrets
 genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 
-def limpiar_texto_para_pdf(texto):
-    """
-    Limpia el texto para que FPDF no falle al generar el PDF.
-    Sustituye símbolos y asegura codificación latin-1.
-    """
-    # Cambios básicos de símbolos
-    texto = texto.replace('€', 'Euros').replace('**', '').replace('*', '-')
-    
-    # Manejo de acentos y caracteres especiales para evitar errores de codificación
-    texto = texto.replace('á', 'a').replace('é', 'e').replace('í', 'i').replace('ó', 'o').replace('ú', 'u')
-    texto = texto.replace('ñ', 'n').replace('Á', 'A').replace('É', 'E').replace('Í', 'I').replace('Ó', 'O').replace('Ú', 'U')
-    
-    # Retornamos el texto codificado de forma segura
-    return texto.encode('latin-1', 'replace').decode('latin-1')
+def imagen_a_base64(img_file):
+    """Convierte la foto en texto para que viaje dentro del archivo HTML"""
+    img = Image.open(img_file)
+    # Redimensionamos a 800px para que el archivo no pese demasiado en Drive
+    img.thumbnail((800, 800)) 
+    buffered = BytesIO()
+    img.save(buffered, format="JPEG")
+    return base64.b64encode(buffered.getvalue()).decode()
 
-# 2. INTERFAZ DE USUARIO
-st.set_page_config(page_title="Test PDF Pro", layout="centered")
-st.title("🚜 Generador de Informes PDF")
+def subir_a_drive(nombre, html_content, id_carpeta):
+    """Sube el archivo directamente a tu carpeta usando el ID que me diste"""
+    try:
+        # Cargamos las credenciales de la cuenta de servicio
+        info_llave = st.secrets["gcp_service_account"]
+        creds = service_account.Credentials.from_service_account_info(info_llave)
+        service = build('drive', 'v3', credentials=creds)
 
-marca = st.text_input("Marca del tractor", placeholder="Ej: John Deere")
-modelo = st.text_input("Modelo", placeholder="Ej: 6155M")
-fotos = st.file_uploader("Sube fotos para el peritaje", accept_multiple_files=True)
+        file_metadata = {
+            'name': nombre, 
+            'parents': [id_carpeta],
+            'mimeType': 'text/html'
+        }
+        
+        media = MediaIoBaseUpload(BytesIO(html_content.encode('utf-8')), mimetype='text/html')
+        service.files().create(body=file_metadata, media_body=media, fields='id').execute()
+        return True
+    except Exception as e:
+        st.error(f"Error técnico al subir a Drive: {e}")
+        return False
 
-if st.button("🚀 GENERAR TASACIÓN Y PDF"):
-    if not fotos or not marca:
-        st.error("⚠️ Por favor, introduce la marca y sube alguna foto.")
+# ==========================================
+# 2. INTERFAZ DE LA APLICACIÓN
+# ==========================================
+st.set_page_config(page_title="Tasador Experto V2.0", layout="centered")
+st.title("🚜 Sistema de Tasación Centralizada")
+st.write("Los informes se guardarán automáticamente en la carpeta compartida.")
+
+# Formulario de datos
+c1, c2 = st.columns(2)
+with c1:
+    marca = st.text_input("Marca*", placeholder="Ej: John Deere")
+    anio = st.text_input("Año*", placeholder="Ej: 2018")
+with c2:
+    modelo = st.text_input("Modelo*", placeholder="Ej: 6155M")
+    horas = st.number_input("Horas*", min_value=0)
+
+observaciones = st.text_area("Extras e Incidencias", placeholder="Pala, estado de neumáticos, averías...")
+
+# Subida de fotos
+fotos = st.file_uploader("Fotos del vehículo (Mínimo 5)", accept_multiple_files=True)
+
+if fotos:
+    st.image(fotos, width=100) # Previsualización rápida
+
+st.divider()
+
+# ==========================================
+# 3. EJECUCIÓN
+# ==========================================
+if st.button("🚀 FINALIZAR Y ENVIAR A CENTRAL"):
+    if not fotos or not marca or not modelo:
+        st.warning("⚠️ Completa los campos obligatorios y sube las fotos.")
     else:
         try:
-            # Motor Gemini 2.5 Flash
-            model = genai.GenerativeModel('gemini-2.5-flash')
+            # Usamos Gemini 2.5 Flash para el análisis
+            model = genai.GenerativeModel('gemini-2.0-flash') # Cambiar a 2.5 si ya tienes acceso
             
-            with st.spinner('Analizando maquinaria...'):
-                # Redimensionamos fotos para optimizar la cuota
-                lista_ia = [f"Haz un informe técnico del tractor {marca} {modelo}."]
-                for f in fotos:
-                    img = Image.open(f)
-                    img.thumbnail((800, 800))
-                    lista_ia.append(img)
+            with st.spinner('Analizando y enviando informe...'):
+                # 1. IA analiza fotos y datos
+                prompt = f"Actúa como perito tasador. Analiza este {marca} {modelo} del {anio} con {horas}h. Extras: {observaciones}. Genera un informe profesional con precios de mercado."
+                res = model.generate_content([prompt] + [Image.open(f) for f in fotos])
                 
-                res = model.generate_content(lista_ia)
+                # Mostramos resultado en la pantalla del móvil del vendedor
+                st.success("✅ Tasación generada")
+                st.markdown(res.text)
 
-            # Mostrar resultado en la App
-            st.markdown("### Vista Previa del Informe")
-            st.info(res.text)
+                # 2. Creamos el archivo HTML "Todo en Uno"
+                html_fotos = ""
+                for f in fotos:
+                    b64 = imagen_a_base64(f)
+                    html_fotos += f'<div style="margin-bottom:20px;"><img src="data:image/jpeg;base64,{b64}" style="width:100%; max-width:600px; border-radius:10px;"></div>'
 
-            # --- CONSTRUCCIÓN DEL PDF ---
-            pdf = FPDF()
-            pdf.add_page()
-            
-            # Título
-            pdf.set_font("Arial", 'B', 16)
-            pdf.cell(190, 10, txt=f"INFORME DE TASACION: {marca.upper()}", ln=True, align='C')
-            pdf.ln(10)
-            
-            # Contenido
-            pdf.set_font("Arial", size=11)
-            texto_limpio = limpiar_texto_para_pdf(res.text)
-            pdf.multi_cell(0, 7, txt=texto_limpio)
+                texto_ia_html = res.text.replace('\n', '<br>')
+                fecha_hoy = datetime.date.today().strftime('%d/%m/%Y')
+                
+                contenido_final = f"""
+                <html>
+                <body style="font-family: Arial, sans-serif; padding: 30px; color: #333; line-height: 1.6;">
+                    <h1 style="color: #2e7d32;">Informe de Tasación Profesional</h1>
+                    <p><b>Unidad:</b> {marca} {modelo} ({anio})</p>
+                    <p><b>Fecha de peritaje:</b> {fecha_hoy}</p>
+                    <hr>
+                    <div style="background: #f9f9f9; padding: 20px; border-radius: 10px;">
+                        {texto_ia_html}
+                    </div>
+                    <hr>
+                    <h2 style="color: #2e7d32;">Evidencia Fotográfica</h2>
+                    {html_fotos}
+                    <p style="font-size: 0.8em; color: #888;">Generado por Tasador Experto V2.0</p>
+                </body>
+                </html>
+                """
 
-            # --- CONVERSIÓN A BYTES (SOLUCIÓN AL ERROR) ---
-            # Forzamos la conversión de bytearray a bytes inmutables
-            pdf_output = pdf.output()
-            pdf_bytes = bytes(pdf_output) 
-            
-            # --- BOTÓN DE DESCARGA ---
-            st.download_button(
-                label="📥 DESCARGAR INFORME PDF",
-                data=pdf_bytes,
-                file_name=f"Tasacion_{marca}.pdf",
-                mime="application/pdf"
-            )
-            st.success("✅ PDF generado correctamente.")
-
+                # 3. Subida a tu carpeta específica
+                ID_CARPETA = "1nC0BvL3Yv1X6ui0oK1Nz0SJ0mSYEBLzK"
+                nombre_archivo = f"TASACION_{marca}_{modelo}_{datetime.date.today()}.html"
+                
+                if subir_a_drive(nombre_archivo, contenido_final, ID_CARPETA):
+                    st.balloons()
+                    st.success(f"📂 ¡ENVIADO! El informe ya está en la carpeta de la central.")
+                
         except Exception as e:
-            st.error(f"❌ Error detectado: {e}")
+            st.error(f"Se produjo un error: {e}")
