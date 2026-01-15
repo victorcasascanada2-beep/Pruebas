@@ -58,19 +58,28 @@ if st.button("🚀 REALIZAR TASACIÓN"):
             - Modelo: {marca} {modelo} | Año: {anio} | Horas: {horas}
             - Equipación Clave: {observaciones} (Pala, Tripuntal, Transmisión, Neumáticos)
 
-            INSTRUCCIONES DE ANÁLISIS:
-            1. BUSCAR HORQUILLA: Localiza anuncios con año y horas similares para establecer el rango Base.
-            2. COMPARAR EQUIPACIÓN:
-               - Si tiene PALA o TRIPUNTAL: Súbelo hacia el precio de Ben Burgess o E-FARM.
-               - Si la TRANSMISIÓN es superior (ej. AutoPower/Vario o IVT o Cambio continuo): Posiciónalo en el tercio superior de la horquilla.
-               - Si los NEUMÁTICOS están >70%: Evita el descuento por mantenimiento inmediato.
-            3. FILTRO DE HORAS ALTAS: Si supera las 8.500h, ancla el precio al 'suelo' detectado en Milanuncios/Agriaffaires para evitar valores irreales.
+           PROCEDIMIENTO OBLIGATORIO:
+            1. ANÁLISIS VISUAL (MULTIMODAL):
+               - Examina detenidamente las fotos adjuntas.
+               - Detecta signos de desgaste real: estado de los tacos de los neumáticos, estado de la pintura del motor (indica si ha trabajado con abonos), posibles fugas visibles y limpieza de la cabina.
+               - Si el estado visual es inferior a la media de anuncios europeos, penaliza el precio final.
 
-            SALIDA RESUMIDA (Formato Estricto):
-            - RANGO MERCADO: [Precio Mín - Precio Máx encontrado]
-            - POSICIONAMIENTO: [Bajo / Medio / Alto] Justificado por equipación.
-            - PRECIO SUGERIDO: [Cifra única en €]
-            - ANUNCIO DE REFERENCIA: [Link o descripción breve del anuncio más similar encontrado]
+            2. BÚSQUEDA GLOBAL Y LIMPIEZA (Media Truncada): 
+               - Localiza anuncios en Agriaffaires, Traktorpool, Mascus, E-FARM y Ben Burgess.
+               - Ordena de mayor a menor y ELIMINA el 10% superior y el 10% inferior para evitar distorsiones.
+               - Trabaja con el bloque central (el 80% de la muestra).
+
+            3. CRUCE DE DATOS:
+               - Compara la unidad de las fotos con los anuncios del bloque central.
+               - Si carece de TDF DELANTERA (como en el caso de este Fendt), descuenta su valor de reposición (aprox. 3.500€ - 5.000€).
+               - Ajusta por horas: si supera las 12.000h, posiciona el precio en el cuartil inferior del bloque central.
+
+            SALIDA DE DATOS:
+            - MUESTRA ANALIZADA: [Nº de anuncios]
+            - ESTADO VISUAL DETECTADO: [Resumen de lo visto en las fotos]
+            - HORQUILLA TRUNCADA: [Mín - Máx real]
+            - PRECIO DE ATERRIZAJE: [Cifra única en €]
+            - NOTA DEL PERITO: [Justificación breve del precio final basada en el cruce de fotos y mercado]
             """
 
             # 3. El spinner envuelve el proceso de análisis y carga de imágenes
