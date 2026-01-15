@@ -76,6 +76,10 @@ if st.button("🚀 REALIZAR TASACIÓN"):
 
             SALIDA DE DATOS:
             - MUESTRA ANALIZADA: [Nº de anuncios]
+            - ANÁLISIS FOTOGRÁFICO:
+              * Foto 1: [Resumen de 1 línea]
+              * Foto 2: [Resumen de 1 línea]
+              * ... (hasta completar todas las subidas)
             - ESTADO VISUAL DETECTADO: [Resumen de lo visto en las fotos]
             - HORQUILLA TRUNCADA: [Mín - Máx real]
             - PRECIO DE ATERRIZAJE: [Cifra única en €]
