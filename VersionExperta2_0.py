@@ -50,40 +50,44 @@ if st.button("🚀 REALIZAR TASACIÓN"):
             # 1. Definimos el modelo (operación rápida)
             model = genai.GenerativeModel('gemini-2.5-flash')
             
-            # 2. Preparamos el Prompt de comparación técnica
+           Aquí tienes el bloque de prompt definitivo. He integrado la lógica de la Media Truncada, el Análisis Visual para detectar extras como el Zuidberg, y el nuevo Cálculo de Margen Comercial para que la cifra final coincida con vuestra estrategia de negocio (comprar en 30k para anunciar en 36k).
+
+Copia y sustituye esta parte en tu archivo .py:
+
+Python
+
+            # --- PROMPT DE TASACIÓN COMERCIAL PROFESIONAL ---
             prompt = f"""
-            Actúa como un experto tasador agrícola. Compara el tractor introducido con el mercado actual (Agriaffaires, Milanuncios, Traktorpool, E-FARM y Ben Burgess).
+            Actúa como un perito tasador y director comercial de maquinaria agrícola. Tu objetivo es calcular el valor de compra y el precio de venta recomendado para un {marca} {modelo} ({anio}).
 
-            UNIDAD A TASAR:
-            - Modelo: {marca} {modelo} | Año: {anio} | Horas: {horas}
-            - Equipación Clave: {observaciones} (Pala, Tripuntal, Transmisión, Neumáticos)
+            DATOS DE LA UNIDAD:
+            - Modelo: {marca} {modelo} | Año: {anio} | Uso: {horas} horas.
+            - Extras declarados: {observaciones} (Incluyendo Tripuntal Zuidberg y Neumáticos al 75% si procede).
 
-           PROCEDIMIENTO OBLIGATORIO:
-            1. ANÁLISIS VISUAL (MULTIMODAL):
-               - Examina detenidamente las fotos adjuntas.
-               - Detecta signos de desgaste real: estado de los tacos de los neumáticos, estado de la pintura del motor (indica si ha trabajado con abonos), posibles fugas visibles y limpieza de la cabina.
-               - Si el estado visual es inferior a la media de anuncios europeos, penaliza el precio final.
+            INSTRUCCIONES DE ANÁLISIS:
+            1. ANÁLISIS VISUAL FOTO A FOTO:
+               - Identifica y resume cada imagen. Busca específicamente el Tripuntal delantero, el estado de los tacos de las ruedas y la limpieza de la cabina/motor.
+               - Si detectas extras de alto valor (Zuidberg, pesas, suspensión), úsalos para justificar un posicionamiento en la banda alta.
 
-            2. BÚSQUEDA GLOBAL Y LIMPIEZA (Media Truncada): 
-               - Localiza anuncios en Agriaffaires, Traktorpool, Mascus, E-FARM y Ben Burgess.
-               - Ordena de mayor a menor y ELIMINA el 10% superior y el 10% inferior para evitar distorsiones.
-               - Trabaja con el bloque central (el 80% de la muestra).
+            2. PROCEDIMIENTO ESTADÍSTICO (Media Truncada):
+               - Busca en Agriaffaires, Traktorpool, E-FARM y Mascus. 
+               - Toma toda la muestra europea de este modelo y año. Ordena por precio y ELIMINA el 10% más caro y el 10% más barato para limpiar la muestra de anuncios irreales.
 
-            3. CRUCE DE DATOS:
-               - Compara la unidad de las fotos con los anuncios del bloque central.
-               - Si carece de TDF DELANTERA (como en el caso de este Fendt), descuenta su valor de reposición (aprox. 3.500€ - 5.000€).
-               - Ajusta por horas: si supera las 12.000h, posiciona el precio en el cuartil inferior del bloque central.
+            3. CÁLCULO DE VALORES (Lógica Comercial):
+               - PRECIO DE ATERRIZAJE (Compra): Es el valor real de mercado basado en la media truncada, ajustado por horas y extras visuales. (Este debe ser vuestro valor de adquisición).
+               - PRECIO DE ANUNCIO (PVP): Sobre el precio de aterrizaje, añade un margen comercial del 15-20% para cubrir garantía, preparación y margen de negociación.
 
-            SALIDA DE DATOS:
-            - MUESTRA ANALIZADA: [Nº de anuncios]
-            - ANÁLISIS FOTOGRÁFICO:
-              * Foto 1: [Resumen de 1 línea]
-              * Foto 2: [Resumen de 1 línea]
-              * ... (hasta completar todas las subidas)
-            - ESTADO VISUAL DETECTADO: [Resumen de lo visto en las fotos]
-            - HORQUILLA TRUNCADA: [Mín - Máx real]
-            - PRECIO DE ATERRIZAJE: [Cifra única en €]
-            - NOTA DEL PERITO: [Justificación breve del precio final basada en el cruce de fotos y mercado]
+            SALIDA DE DATOS REQUERIDA:
+            -TABLA DE ANUNCIOS [Una tabla con pais ciudad año y precio de anuncio]
+            - MUESTRA ANALIZADA: [Nº anuncios encontrados en Europa]
+            - RESUMEN VISUAL: [Breve descripción de lo detectado en las fotos subidas]
+            - ESTADO GENERAL: [Puntuación 1-10]
+            
+            - RESULTADOS FINALES:
+              * VALOR DE MERCADO (Aterrizaje): [Cifra en €]
+              * PRECIO DE ANUNCIO SUGERIDO (PVP): [Cifra en €] 
+            
+            - NOTA COMERCIAL: [Justificación de por qué este tractor permite ese margen (ej: "Unidad muy buscada por horas y tripuntal Zuidberg").]
             """
 
             # 3. El spinner envuelve el proceso de análisis y carga de imágenes
