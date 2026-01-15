@@ -24,9 +24,8 @@ def imagen_a_base64(img_file):
     return base64.b64encode(buffered.getvalue()).decode()
 
 def subir_a_drive(nombre, html_content, id_carpeta):
-    """Sube el archivo directamente a tu carpeta usando el ID que me diste"""
+    """Sube el archivo asegurando que no use la cuota del bot"""
     try:
-        # Cargamos las credenciales de la cuenta de servicio
         info_llave = st.secrets["gcp_service_account"]
         creds = service_account.Credentials.from_service_account_info(info_llave)
         service = build('drive', 'v3', credentials=creds)
@@ -37,10 +36,22 @@ def subir_a_drive(nombre, html_content, id_carpeta):
             'mimeType': 'text/html'
         }
         
-        media = MediaIoBaseUpload(BytesIO(html_content.encode('utf-8')), mimetype='text/html')
-        service.files().create(body=file_metadata, media_body=media, fields='id').execute()
+        # Convertimos el contenido a bytes
+        media_content = BytesIO(html_content.encode('utf-8'))
+        media = MediaIoBaseUpload(media_content, mimetype='text/html', resumable=True)
+        
+        # IMPORTANTE: supportsAllDrives=True permite subir a carpetas donde el bot es editor
+        # aunque el bot no tenga espacio propio.
+        file = service.files().create(
+            body=file_metadata, 
+            media_body=media, 
+            fields='id',
+            supportsAllDrives=True  # <--- Esto es clave
+        ).execute()
+        
         return True
     except Exception as e:
+        # Si sigue fallando, es que el bot no tiene permiso de Editor en esa carpeta
         st.error(f"Error técnico al subir a Drive: {e}")
         return False
 
