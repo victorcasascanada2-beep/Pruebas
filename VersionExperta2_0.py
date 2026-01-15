@@ -46,46 +46,46 @@ if st.button("🚀 REALIZAR TASACIÓN"):
     elif len(fotos_subidas) < 5:
         st.warning("⚠️ Sube al menos 5 fotos.")
     else:
-        # Barra de progreso
-        barra = st.progress(0)
-        txt_estado = st.empty()
-        
-        for i in range(1, 101):
-            time.sleep(0.05)
-            barra.progress(i)
-            if i == 30: txt_estado.text("🔎 Analizando estado visual...")
-            if i == 70: txt_estado.text("📊 Calculando horquilla de mercado...")
-
         try:
-            # Motor 2.5-flash como solicitaste
+            # 1. Definimos el modelo (es una operación rápida)
             model = genai.GenerativeModel('gemini-2.5-flash')
             
-           # --- PROMPT DE POSICIONAMIENTO GLOBAL CON ENFOQUE ESPAÑA ---
-            prompt = f"""
-            Actúa como un experto en valoración de activos agrícolas con acceso a mercados internacionales.
-            Tu misión es tasar un {marca} {modelo} ({anio}) con {horas} horas.
+            # 2. El spinner envuelve el proceso que realmente tarda: la consulta a la IA
+            with st.spinner('🔍 Rastreando anuncios en Agriaffaires, Ben Burgess y portales europeos...'):
+                
+                # Aquí es donde Gemini "piensa" y busca los datos
+                # La bolita girará exactamente lo que tarde esta línea en ejecutarse
+                response = model.generate_content(prompt)
+            
+            # 3. Una vez termina, mostramos el éxito y el resultado
+            st.success("✅ Tasación finalizada con éxito")
+            st.markdown(response.text)
 
-            DATOS DE LA UNIDAD:
-            - Identificación: {marca} {modelo} | Año: {anio} | Horas: {horas}
-            - Equipamiento y Estado: {observaciones}
+        except Exception as e:
+            st.error(f"❌ Error al conectar con el motor de tasación: {e}")
+            
+           # --- PROMPT DE COMPARACIÓN TÉCNICA Y POSICIONAMIENTO ---
+prompt = f"""
+Actúa como un experto tasador agrícola. Compara el tractor introducido con el mercado actual (Agriaffaires, Milanuncios, Traktorpool, E-FARM y Ben Burgess).
 
-            ESTRATEGIA DE BÚSQUEDA (MULTIDOMINIO):
-            1. RASTREO EN ESPAÑA: Busca en Milanuncios y Agriaffaires.es para establecer el precio de mercado nacional (PVP).
-            2. CONTRASTE EUROPEO: Busca en Traktorpool, Mascus y Truck1 (Alemania, Francia, Italia).
-            3. ANÁLISIS DE LA OFERTA: 
-               - Si en España hay escasez, usa los precios de Europa como base y añade un plus por disponibilidad inmediata y ahorro de importación.
-               - Identifica el 'Suelo' (unidades básicas o con muchas horas) y el 'Techo' (unidades con motor reparado, garantía oficial o Full Equip).
+UNIDAD A TASAR:
+- Modelo: {marca} {modelo} | Año: {anio} | Horas: {horas}
+- Equipación Clave: {observaciones} (Pala, Tripuntal, Transmisión, Neumáticos)
 
-            LÓGICA DE POSICIONAMIENTO POR BONDADES:
-            - POSICIONAMIENTO: Sitúa la unidad en la horquilla basándote en extras: Tripuntal, Frenos de aire, estado de neumáticos (>70%) y tipo de transmisión.
-            - FACTOR MOTOR REPARADO: Si detectas anuncios de 93k con motor hecho, úsalos como referencia de 'unidad renovada', pero prioriza el valor de horas reales de chasis si estas son bajas (<7.000h).
-            - PROHIBIDO: No menciones porcentajes de descuento internos ni uses reglas fijas de euros/hora. Todo debe ser comparativo entre anuncios reales.
+INSTRUCCIONES DE ANÁLISIS:
+1. BUSCAR HORQUILLA: Localiza anuncios con año y horas similares para establecer el rango Base.
+2. COMPARAR EQUIPACIÓN:
+   - Si tiene PALA o TRIPUNTAL: Súbelo hacia el precio de Ben Burgess o E-FARM.
+   - Si la TRANSMISIÓN es superior (ej. AutoPower/Vario o IVT o Cambio continuo): Posiciónalo en el tercio superior de la horquilla.
+   - Si los NEUMÁTICOS están >70%: Evita el descuento por mantenimiento inmediato.
+3. FILTRO DE HORAS ALTAS: Si supera las 8.500h, ancla el precio al 'suelo' detectado en Milanuncios/Agriaffaires para evitar valores irreales.
 
-            SALIDA DE DATOS:
-            - Horquilla de Mercado Nacional e Internacional.
-            - Lista de 'Bondades' que justifican el precio (por qué sube o por qué baja respecto a la media).
-            - Precio Final Sugerido basado en el objetivo de {observaciones} (Compra/Venta).
-            """
+SALIDA RESUMIDA (Formato Estricto):
+- RANGO MERCADO: [Precio Mín - Precio Máx encontrado]
+- POSICIONAMIENTO: [Bajo / Medio / Alto] Justificado por equipación.
+- PRECIO SUGERIDO: [Cifra única en €]
+- ANUNCIO DE REFERENCIA: [Link o descripción breve del anuncio más similar encontrado]
+"""
             
             contenido = [prompt]
             for f in fotos_subidas:
