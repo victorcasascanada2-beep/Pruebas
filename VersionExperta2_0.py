@@ -131,7 +131,7 @@ if st.button("🚀 REALIZAR TASACIÓN PROFESIONAL"):
             pdf.multi_cell(0, 7, txt=texto_seguro)
             
             # Preparar descarga
-            pdf_bytes = pdf.output(dest='S').encode('latin-1')
+            pdf_bytes = pdf.output(dest='S')
             
             # 4. Botón de Descarga
             st.download_button(
