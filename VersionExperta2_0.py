@@ -139,4 +139,7 @@ if st.button("🚀 REALIZAR TASACIÓN"):
             # --- INTENTO DE GUARDADO EN DRIVE ---
             nombre_archivo = f"Tasacion_{marca}_{modelo}_{horas}h.pdf"
             info_cabecera = f"{marca} {modelo} ({anio})"
-            guardar_en_drive(nombre_archivo,
+            guardar_en_drive(nombre_archivo, res.text, info_cabecera)
+            
+        except Exception as e:
+            st.error(f"❌ Error en el proceso: {e}")
