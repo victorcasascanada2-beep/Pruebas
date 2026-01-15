@@ -50,11 +50,7 @@ if st.button("🚀 REALIZAR TASACIÓN"):
             # 1. Definimos el modelo (operación rápida)
             model = genai.GenerativeModel('gemini-2.5-flash')
             
-           Aquí tienes el bloque de prompt definitivo. He integrado la lógica de la Media Truncada, el Análisis Visual para detectar extras como el Zuidberg, y el nuevo Cálculo de Margen Comercial para que la cifra final coincida con vuestra estrategia de negocio (comprar en 30k para anunciar en 36k).
 
-Copia y sustituye esta parte en tu archivo .py:
-
-Python
 
             # --- PROMPT DE TASACIÓN COMERCIAL PROFESIONAL ---
             prompt = f"""
