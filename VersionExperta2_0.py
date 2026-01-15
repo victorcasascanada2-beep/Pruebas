@@ -1,11 +1,81 @@
 import streamlit as st
+from fpdf import FPDF
 import google.generativeai as genai
 from PIL import Image
-import time
+import datetime
+import os
+from googleapiclient.discovery import build
+from google.oauth2 import service_account
+from googleapiclient.http import MediaFileUpload
 
 # 1. Configuración de la API (Usando el modelo recordado)
 genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
+# 2. Función para gestionar Google Drive y PDF
+def guardar_en_drive(nombre_archivo, texto_ia, cabecera):
+    try:
+        # Credenciales desde Secrets
+        info_llave = st.secrets["gcp_service_account"]
+        creds = service_account.Credentials.from_service_account_info(info_llave)
+        service = build('drive', 'v3', credentials=creds)
 
+        # Crear PDF
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Arial", 'B', 16)
+        pdf.cell(190, 10, txt="INFORME DE TASACION PROFESIONAL", ln=True, align='C')
+        pdf.ln(10)
+        
+        pdf.set_font("Arial", 'B', 12)
+        pdf.cell(190, 10, txt=f"Unidad: {cabecera}", ln=True)
+        pdf.cell(190, 10, txt=f"Fecha: {datetime.datetime.now().strftime('%d/%m/%Y')}", ln=True)
+        pdf.ln(5)
+        
+        pdf.set_font("Arial", size=11)
+        # Limpieza para evitar errores con símbolos (como el €)
+        texto_pdf = texto_ia.replace('€', 'Euros').encode('latin-1', 'replace').decode('latin-1')
+        pdf.multi_cell(0, 7, txt=texto_pdf)
+        
+        path_temp = "temp_tasacion.pdf"
+        pdf.output(path_temp)
+
+        # Buscar carpeta "Tasaciones"
+        query = "name = 'Tasaciones' and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
+        res_drive = service.files().list(q=query, fields="files(id)").execute()
+        carpetas = res_drive.get('files', [])
+        
+        if not carpetas:
+            st.error("No se encontro la carpeta 'Tasaciones' en Drive.")
+            return
+
+        id_carpeta = carpetas[0]['id']
+
+        # Subir archivo
+        metadatos = {'name': nombre_archivo, 'parents': [id_carpeta]}
+        media = MediaFileUpload(path_temp, mimetype='application/pdf')
+        service.files().create(body=metadatos, media_body=media, fields='id').execute()
+
+        if os.path.exists(path_temp):
+            os.remove(path_temp)
+            
+        st.success(f"✅ Guardado en Drive: {nombre_archivo}")
+    except Exception as e:
+        st.error(f"Error en Drive/PDF: {e}")
+
+# --- AQUÍ EMPIEZA TU APP DE STREAMLIT ---
+st.title("🚜 Tasador Experto Pro")
+
+# ... (Tus inputs de marca, modelo, horas, fotos, etc.) ...
+
+if st.button("🚀 REALIZAR TASACIÓN"):
+    # ... (Tu lógica de Gemini para obtener 'res.text') ...
+    
+    # Mostrar en pantalla
+    st.markdown(res.text)
+    
+    # GUARDAR EN DRIVE AUTOMÁTICAMENTE
+    nombre_pdf = f"Tasacion_{marca}_{modelo}_{horas}h.pdf"
+    info_maquina = f"{marca} {modelo} ({anio})"
+    guardar_en_drive(nombre_pdf, res.text, info_maquina)
 st.title("🚜 Peritaje Profesional V2.0")
 
 # --- FORMULARIO DE DATOS ---
