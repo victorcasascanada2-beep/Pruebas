@@ -53,7 +53,7 @@ if st.button("🚀 PROBAR GENERACIÓN"):
 
             # --- LA DESCARGA (CORREGIDO) ---
             # En las versiones nuevas de fpdf2, esto ya devuelve bytes
-            pdf_bytes = pdf.output() 
+            pdf_bytes = (pdf.output())
             
             st.download_button(
                 label="📥 DESCARGAR PDF DE PRUEBA",
