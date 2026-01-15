@@ -10,6 +10,14 @@ from googleapiclient.http import MediaFileUpload
 
 # 1. Configuración de la API (Usando el modelo recordado)
 genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
+
+# 3. Función para gestionar  PDF en local
+def limpiar_texto_para_pdf(texto):
+    # Sustituimos símbolos que rompen el PDF
+    texto = texto.replace('€', 'Euros')
+    texto = texto.replace('**', '') # Quitamos negritas de Gemini (el PDF no las entiende así)
+    # Forzamos a que el texto use un formato que el PDF entienda
+    return texto.encode('latin-1', 'replace').decode('latin-1')
 # 2. Función para gestionar Google Drive y PDF
 def guardar_en_drive(nombre_archivo, texto_ia, cabecera):
     try:
@@ -71,6 +79,37 @@ if st.button("🚀 REALIZAR TASACIÓN"):
     
     # Mostrar en pantalla
     st.markdown(res.text)
+    # --- DENTRO DEL BOTON: if st.button("🚀 REALIZAR TASACIÓN"): ---
+
+    # ... aquí ya tienes st.markdown(res.text) ...
+
+    # PASO A: Preparar el lienzo (PDF)
+    pdf = FPDF()
+    pdf.add_page()
+    
+    # PASO B: Poner el Título
+    pdf.set_font("Arial", 'B', 16)
+    pdf.cell(190, 10, txt="INFORME DE TASACION AGRICOLA", ln=True, align='C')
+    pdf.ln(10) # Salto de línea de 10mm
+    
+    # PASO C: Limpiar y escribir el cuerpo del informe
+    pdf.set_font("Arial", size=11)
+    texto_limpio = limpiar_texto_para_pdf(res.text) # Usamos nuestra herramienta de arriba
+    
+    # multi_cell permite que el texto cambie de renglón automáticamente al llegar al borde
+    pdf.multi_cell(0, 7, txt=texto_limpio)
+    
+    # PASO D: Convertir el PDF en algo descargable (Bytes)
+    # 'S' significa que el resultado se queda en la memoria del programa (Stream)
+    pdf_output = pdf.output(dest='S').encode('latin-1')
+    
+    # PASO E: Mostrar el botón de descarga
+    st.download_button(
+        label="📥 Descargar Informe en PDF",
+        data=pdf_output,
+        file_name=f"Tasacion_{marca}_{modelo}.pdf",
+        mime="application/pdf"
+    )
     
     # GUARDAR EN DRIVE AUTOMÁTICAMENTE
     nombre_pdf = f"Tasacion_{marca}_{modelo}_{horas}h.pdf"
