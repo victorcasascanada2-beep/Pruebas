@@ -47,53 +47,47 @@ if st.button("🚀 REALIZAR TASACIÓN"):
         st.warning("⚠️ Sube al menos 5 fotos.")
     else:
         try:
-            # 1. Definimos el modelo (es una operación rápida)
+            # 1. Definimos el modelo (operación rápida)
             model = genai.GenerativeModel('gemini-2.5-flash')
             
-            # 2. El spinner envuelve el proceso que realmente tarda: la consulta a la IA
-            with st.spinner('🔍 Rastreando anuncios en Agriaffaires, Ben Burgess y portales europeos...'):
+            # 2. Preparamos el Prompt de comparación técnica
+            prompt = f"""
+            Actúa como un experto tasador agrícola. Compara el tractor introducido con el mercado actual (Agriaffaires, Milanuncios, Traktorpool, E-FARM y Ben Burgess).
+
+            UNIDAD A TASAR:
+            - Modelo: {marca} {modelo} | Año: {anio} | Horas: {horas}
+            - Equipación Clave: {observaciones} (Pala, Tripuntal, Transmisión, Neumáticos)
+
+            INSTRUCCIONES DE ANÁLISIS:
+            1. BUSCAR HORQUILLA: Localiza anuncios con año y horas similares para establecer el rango Base.
+            2. COMPARAR EQUIPACIÓN:
+               - Si tiene PALA o TRIPUNTAL: Súbelo hacia el precio de Ben Burgess o E-FARM.
+               - Si la TRANSMISIÓN es superior (ej. AutoPower/Vario o IVT o Cambio continuo): Posiciónalo en el tercio superior de la horquilla.
+               - Si los NEUMÁTICOS están >70%: Evita el descuento por mantenimiento inmediato.
+            3. FILTRO DE HORAS ALTAS: Si supera las 8.500h, ancla el precio al 'suelo' detectado en Milanuncios/Agriaffaires para evitar valores irreales.
+
+            SALIDA RESUMIDA (Formato Estricto):
+            - RANGO MERCADO: [Precio Mín - Precio Máx encontrado]
+            - POSICIONAMIENTO: [Bajo / Medio / Alto] Justificado por equipación.
+            - PRECIO SUGERIDO: [Cifra única en €]
+            - ANUNCIO DE REFERENCIA: [Link o descripción breve del anuncio más similar encontrado]
+            """
+
+            # 3. El spinner envuelve el proceso de análisis y carga de imágenes
+            with st.spinner('🔍 Analizando fotos y rastreando anuncios en Agriaffaires, Ben Burgess y portales europeos...'):
                 
-                # Aquí es donde Gemini "piensa" y busca los datos
-                # La bolita girará exactamente lo que tarde esta línea en ejecutarse
-                response = model.generate_content(prompt)
+                # Preparamos el contenido mezclando texto e imágenes
+                contenido = [prompt]
+                for f in fotos_subidas:
+                    img = Image.open(f)
+                    contenido.append(img)
+                
+                # Llamada única al motor 2.5-flash
+                res = model.generate_content(contenido)
             
-            # 3. Una vez termina, mostramos el éxito y el resultado
-            st.success("✅ Tasación finalizada con éxito")
-            st.markdown(response.text)
-
-        except Exception as e:
-            st.error(f"❌ Error al conectar con el motor de tasación: {e}")
-            
-           # --- PROMPT DE COMPARACIÓN TÉCNICA Y POSICIONAMIENTO ---
-prompt = f"""
-Actúa como un experto tasador agrícola. Compara el tractor introducido con el mercado actual (Agriaffaires, Milanuncios, Traktorpool, E-FARM y Ben Burgess).
-
-UNIDAD A TASAR:
-- Modelo: {marca} {modelo} | Año: {anio} | Horas: {horas}
-- Equipación Clave: {observaciones} (Pala, Tripuntal, Transmisión, Neumáticos)
-
-INSTRUCCIONES DE ANÁLISIS:
-1. BUSCAR HORQUILLA: Localiza anuncios con año y horas similares para establecer el rango Base.
-2. COMPARAR EQUIPACIÓN:
-   - Si tiene PALA o TRIPUNTAL: Súbelo hacia el precio de Ben Burgess o E-FARM.
-   - Si la TRANSMISIÓN es superior (ej. AutoPower/Vario o IVT o Cambio continuo): Posiciónalo en el tercio superior de la horquilla.
-   - Si los NEUMÁTICOS están >70%: Evita el descuento por mantenimiento inmediato.
-3. FILTRO DE HORAS ALTAS: Si supera las 8.500h, ancla el precio al 'suelo' detectado en Milanuncios/Agriaffaires para evitar valores irreales.
-
-SALIDA RESUMIDA (Formato Estricto):
-- RANGO MERCADO: [Precio Mín - Precio Máx encontrado]
-- POSICIONAMIENTO: [Bajo / Medio / Alto] Justificado por equipación.
-- PRECIO SUGERIDO: [Cifra única en €]
-- ANUNCIO DE REFERENCIA: [Link o descripción breve del anuncio más similar encontrado]
-"""
-            
-            contenido = [prompt]
-            for f in fotos_subidas:
-                contenido.append(Image.open(f))
-            
-            res = model.generate_content(contenido)
-            st.success("Tasación Finalizada")
+            # 4. Resultado final
+            st.success("✅ Tasación Finalizada con éxito")
             st.markdown(res.text)
             
         except Exception as e:
-            st.error(f"Fallo en la IA: {e}")
+            st.error(f"❌ Error en el motor de tasación: {e}")
