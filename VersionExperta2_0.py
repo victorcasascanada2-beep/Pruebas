@@ -70,8 +70,8 @@ if st.button("🚀 REALIZAR TASACIÓN"):
                - Toma toda la muestra europea de este modelo y año. Ordena por precio y ELIMINA el 10% más caro y el 10% más barato para limpiar la muestra de anuncios irreales.
 
             3. CÁLCULO DE VALORES (Lógica Comercial):
-               - PRECIO DE ATERRIZAJE (Compra): Es el valor real de mercado basado en la media truncada, ajustado por horas y extras visuales. (Este debe ser vuestro valor de adquisición).
-               - PRECIO DE ANUNCIO (PVP): Sobre el precio de aterrizaje, añade un margen comercial del 15-20% para cubrir garantía, preparación y margen de negociación.
+               - PRECIO DE ATERRIZAJE: Es el valor real de mercado basado en la media truncada, ajustado por horas y extras visuales. (Este debe ser vuestro valor de anuncio).
+               - PRECIO DE COMPRA (PVP): Sobre el precio de aterrizaje, resta un margen del 15 para cubrir preparación.
 
             SALIDA DE DATOS REQUERIDA:
             -TABLA DE ANUNCIOS [Una tabla con pais ciudad año y precio de anuncio]
@@ -81,7 +81,7 @@ if st.button("🚀 REALIZAR TASACIÓN"):
             
             - RESULTADOS FINALES:
               * VALOR DE MERCADO (Aterrizaje): [Cifra en €]
-              * PRECIO DE ANUNCIO SUGERIDO (PVP): [Cifra en €] 
+              * PRECIO DE COMPRA SUGERIDA (PVP): [Cifra en €] 
             
             - NOTA COMERCIAL: [Justificación de por qué este tractor permite ese margen (ej: "Unidad muy buscada por horas y tripuntal Zuidberg").]
             """
