@@ -1,100 +1,66 @@
 import streamlit as st
-import google.generativeai as genai
-from PIL import Image
-import time
+from gestor_ia import ejecutar_tasacion_v2
+from usuarios import validar_usuario
 
-def main():
-    # 1. Configuración de API
-    if "GOOGLE_API_KEY" not in st.secrets:
-        st.error("Error: Configura GOOGLE_API_KEY en los Secrets de Streamlit.")
-        return
-    
-    genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
+st.set_page_config(page_title="Peritaje Profesional V2.0", layout="wide")
+# --- CONTROL DE ACCESO ---
+if 'vendedor' not in st.session_state:
+    st.session_state.vendedor = None
 
-    st.title("🚜 Peritaje Profesional V2.0")
-
-    # --- DATOS OBLIGATORIOS (Línea 12 corregida) ---
-    st.subheader("📝 Datos de la Máquina")
-    
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        marca = st.text_input("Marca*", key="marca_input")
-    with col2:
-        modelo = st.text_input("Modelo*", key="modelo_input")
-    with col3:
-        anio = st.text_input("Año*", key="anio_input")
-    
-    observaciones = st.text_area("Incidencias y Extras (Pala, averías, pintura...)", height=100)
-
-    # --- GESTIÓN DE FOTOS ---
-    st.divider()
-    st.subheader("📸 Fotos (Mínimo 5)")
-    fotos_subidas = st.file_uploader("Sube entre 5 y 10 fotos", type=['jpg','jpeg','png'], accept_multiple_files=True)
-
-    comentarios = []
-    if fotos_subidas:
-        for i, foto in enumerate(fotos_subidas[:10]):
-            c1, c2 = st.columns([1, 3])
-            c1.image(foto, use_container_width=True)
-            # Campo de comentario de máximo 4 líneas
-            nota = c2.text_area(f"Nota para foto {i+1}", key=f"nota_{i}", height=90, placeholder="Describa daños o detalles...")
-            comentarios.append(nota)
-
-    # --- BOTÓN DE ACCIÓN ---
-    st.divider()
-    if st.button("🚀 REALIZAR TASACIÓN PROFESIONAL"):
-        if not marca or not modelo or not anio:
-            st.warning("⚠️ Marca, Modelo y Año son obligatorios.")
-        elif len(fotos_subidas) < 5:
-            st.warning("⚠️ Sube al menos 5 fotografías.")
+if not st.session_state.vendedor:
+    st.title("🚜 Acceso al Sistema")
+    codigo = st.text_input("Introduce tu código de empleado")
+    if st.button("Entrar"):
+        user = validar_usuario(codigo)
+        if user:
+            st.session_state.vendedor = user
+            st.rerun()
         else:
-            # Barra de progreso
-            barra = st.progress(0)
-            texto_estado = st.empty()
-            for p in range(100):
-                time.sleep(0.02)
-                barra.progress(p + 1)
-                if p == 20: texto_estado.text("🔍 Analizando imágenes...")
-                if p == 50: texto_estado.text("📊 Consultando mercado europeo...")
-                if p == 85: texto_estado.text("⚖️ Ajustando precio de compra...")
+            st.error("Código incorrecto")
+    st.stop()
 
-            try:
-                # Usamos el modelo flash que es más rápido para peritajes
-                model = genai.GenerativeModel('gemini-2.5-flash')
+# --- INTERFAZ ORIGINAL ---
+st.title(f"🚜 Peritaje Profesional V2.0 - {st.session_state.vendedor['nombre']}")
+
+c1, c2, c3, c4 = st.columns(4)
+with c1: marca = st.text_input("Marca*", key="marca_v2")
+with c2: modelo = st.text_input("Modelo*", key="modelo_v2")
+with c3: anio = st.text_input("Año*", key="anio_v2")
+with c4: horas = st.number_input("Horas de uso*", min_value=0, key="horas_input")
+
+observaciones = st.text_area("Incidencias y Extras", placeholder="Ej: Pala, averías, pintura...")
+
+st.divider()
+
+st.subheader("Fotografías (Mínimo 5)")
+fotos_subidas = st.file_uploader("Sube tus fotos", type=['jpg', 'jpeg', 'png'], accept_multiple_files=True)
+
+if fotos_subidas:
+    if len(fotos_subidas) > 10:
+        st.error("Máximo 10 fotos.")
+    else:
+        cols = st.columns(5)
+        for i, foto in enumerate(fotos_subidas):
+            with cols[i % 5]:
+                st.image(foto, width=150)
+
+st.divider()
+
+if st.button("🚀 REALIZAR TASACIÓN"):
+    if not marca or not modelo or not anio or not horas:
+        st.warning("⚠️ Rellena Marca, Modelo y Año.")
+    elif len(fotos_subidas) < 5:
+        st.warning("⚠️ Sube al menos 5 fotos.")
+    else:
+        try:
+            with st.spinner(f'🔍 {st.session_state.vendedor["nombre"]}, estamos analizando los portales europeos...'):
+                resultado_texto = ejecutar_tasacion_v2(marca, modelo, anio, horas, observaciones, fotos_subidas)
                 
-                # Preparamos las notas de las fotos
-                notas_texto = ""
-                for idx, c in enumerate(comentarios):
-                    notas_texto += f"- Foto {idx+1}: {c}\n"
-
-                prompt = f"""
-                Actúa como tasador profesional de maquinaria agrícola.
-                DATOS: Marca {marca}, Modelo {modelo}, Año {anio}.
-                INCIDENCIAS: {observaciones}
-                NOTAS DE FOTOS:
-                {notas_texto}
-
-                TAREA:
-                1. Extrae el NÚMERO DE SERIE si es visible en alguna placa.
-                2. Calcula un PRECIO DE COMPRA (valor para el concesionario). 
-                   Debe ser un precio para captar la máquina, tirando a la BAJA para dejar margen de reventa, pero realista según mercado europeo.
-                3. Sé muy breve y directo.
-                """
-
-                # Combinar texto y fotos para la IA
-                input_ia = [prompt]
-                for f in fotos_subidas:
-                    input_ia.append(Image.open(f))
-
-                resultado = model.generate_content(input_ia)
-                
-                st.success("✅ Peritaje Finalizado")
-                st.markdown("### Resultado:")
-                st.write(resultado.text)
-                
-            except Exception as error_ia:
-                st.error(f"Error en el proceso: {error_ia}")
-
-# Ejecución
-if __name__ == "__main__":
-    main()
+            st.success("✅ Tasación Finalizada con éxito")
+            st.markdown(resultado_texto)
+            
+            # Aquí ya tenemos el nombre del mecánico para el futuro log/drive
+            st.info(f"Informe preparado por: {st.session_state.vendedor['nombre']}")
+            
+        except Exception as e:
+            st.error(f"❌ Error en el motor de tasación: {e}")
