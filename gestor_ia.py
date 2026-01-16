@@ -22,7 +22,7 @@ def ejecutar_tasacion_v2(marca, modelo, anio, horas, observaciones, fotos_subida
     2. Prioriza anuncios actualizados y tu conocimiento profundo de mercado de España, Francia y Portugal. Solo usa anuncios del resto de Europa si no hay suficiente muestra, pero aplica un factor de corrección 
         a la baja del 15% por costes de importación y logística."
     3. PROCEDIMIENTO ESTADÍSTICO (Media Truncada):
-       - Busca en Agriaffaires, Traktorpool, E-FARM, Mascus Milanuncios y otros portales de compraventa especializados en el sector. 
+       - Busca en Agriaffaires, y Milanuncios y si encuentras pocos resultados, usa otros portales de compraventa especializados en el sector. 
        - Toma toda la muestra europea de este modelo y año. Ordena por precio y ELIMINA el 10% más caro y el 10% más barato para limpiar la muestra de anuncios irreales.
 
     4. CÁLCULO DE VALORES (Lógica Comercial):
