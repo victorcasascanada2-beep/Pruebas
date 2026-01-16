@@ -22,12 +22,12 @@ def ejecutar_tasacion_v2(marca, modelo, anio, horas, observaciones, fotos_subida
     3. PENALIZACIÓN POR USO: Si el tractor supera las 8.000 horas, aplica una penalización agresiva. Si tiene 13.000 horas o más, valóralo como unidad de alta fatiga (valor cercano a liquidación).
     4. DETECTOR DE "MAQUILLAJE": Si ves plásticos en asientos/palancas con más de 2.000 horas, ignóralos; es estética, no conservación.
     5. MEDIA TRUNCADA REAL: Elimina el 20% más caro de los anuncios que encuentres.
-    
+    6.NO TIRES POR TIERRA LA MAQUINA TRATA TODO CON RESPETO
     LÓGICA DE VALORES:
     - PRECIO DE ATERRIZAJE: Valor de mercado real en España para venta rápida.
     - PRECIO DE COMPRA: Aterrizaje menos 15% (margen de beneficio, transporte y preparación).
 
-    SALIDA REQUERIDA (Directa al grano, SIN TABLAS INVENTADAS):
+    SALIDA REQUERIDA (Directa al grano pero con humildad, SIN TABLAS INVENTADAS):
     - RESUMEN VISUAL: [Análisis técnico de fotos: Tripuntal, neumáticos, estado motor].
     - ANÁLISIS DE MERCADO: [Nº de unidades reales encontradas y precio medio real].
     - ESTADO GENERAL: [Puntuación 1-10].
