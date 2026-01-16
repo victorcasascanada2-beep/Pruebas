@@ -3,9 +3,6 @@ from gestor_ia import ejecutar_tasacion_v2
 from usuarios import validar_usuario
 
 st.set_page_config(page_title="Peritaje Profesional V2.0", layout="wide")
-# Si no existe la variable en memoria, la creamos vacía
-if 'ultima_tasacion' not in st.session_state:
-    st.session_state.ultima_tasacion = None
 # --- CONTROL DE ACCESO ---
 if 'vendedor' not in st.session_state:
     st.session_state.vendedor = None
@@ -56,11 +53,6 @@ if st.button("🚀 REALIZAR TASACIÓN"):
         st.warning("⚠️ Sube al menos 5 fotos.")
     else:
         try:
-            if st.button("🚀 REALIZAR TASACIÓN"):
-                # ... (tu lógica de Gemini) ...
-                resultado_texto = ejecutar_tasacion_v2(...)    
-                # GUARDAMOS EN MEMORIA
-    st.session_state.ultima_tasacion = resultado_texto
             with st.spinner(f'🔍 {st.session_state.vendedor["nombre"]}, estamos analizando los portales europeos...'):
                 resultado_texto = ejecutar_tasacion_v2(marca, modelo, anio, horas, observaciones, fotos_subidas)
                 
