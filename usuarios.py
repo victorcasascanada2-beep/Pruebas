@@ -3,6 +3,7 @@
 VENDEDORES = {
     "V1": {"nombre": "Víctor", "id": "001"},
     "M1": {"nombre": "Mecánico Taller 1", "id": "002"},
+    "M2": {"nombre": "CarlosF", "id": "002"},
 }
 
 def validar_usuario(codigo):
