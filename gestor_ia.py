@@ -31,7 +31,7 @@ def ejecutar_tasacion_v2(marca, modelo, anio, horas, observaciones, fotos_subida
     - RESUMEN VISUAL: [Análisis técnico de fotos: Tripuntal, neumáticos, estado motor].
     - ANÁLISIS DE MERCADO: [Nº de unidades reales encontradas y precio medio real].
     - ESTADO GENERAL: [Puntuación 1-10].
-    
+    -A NO SER QUE SE PIDA EXPRESAMENTE NO SAQUES TABLA DE DATOS.
     - RESULTADOS FINALES:
       * VALOR DE MERCADO (Aterrizaje): [Cifra en €]
       * PRECIO DE COMPRA SUGERIDO (PVP): [Cifra en €]
