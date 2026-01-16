@@ -24,9 +24,9 @@ def ejecutar_tasacion_v2(marca, modelo, anio, horas, observaciones, fotos_subida
     3. Prioriza anuncios actualizados y tu conocimiento profundo de mercado de España, Francia y Portugal. Solo usa anuncios del resto de Europa si no hay suficiente muestra, pero aplica un factor de corrección 
         a la baja del 15% por costes de importación y logística."
     4. PROCEDIMIENTO ESTADÍSTICO (Media Truncada):
-       - Busca en Agriaffaires, y Milanuncios y si encuentras pocos resultados, usa otros portales de compraventa especializados en el sector. 
+       - Busca en Agriaffaires, y Milanuncios y si encuentras pocos resultados, usa otros portales de compraventa especializados en el sector.  Si el tractor es fendt elimina automaticamente efarm o tractorpool de la ecuacion.
        - Toma toda la muestra europea de este modelo y año. Ordena por precio y ELIMINA el 10% más caro y el 10% más barato para limpiar la muestra de anuncios irreales.
-
+        -Asegurate de que el precio sea en euros.
     5. CÁLCULO DE VALORES (Lógica Comercial):
        - PRECIO DE ATERRIZAJE: Es el valor real de mercado basado en la media truncada, ajustado por horas y extras visuales. (Este debe ser vuestro valor de anuncio).
        - PRECIO DE COMPRA (PVP): Sobre el precio de aterrizaje, resta un margen del 15 para cubrir preparación.
