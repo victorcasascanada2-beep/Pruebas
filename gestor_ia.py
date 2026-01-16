@@ -19,17 +19,19 @@ def ejecutar_tasacion_v2(marca, modelo, anio, horas, observaciones, fotos_subida
     1. ANÁLISIS VISUAL FOTO A FOTO:
        - Identifica y resume cada imagen. Busca específicamente el Tripuntal delantero, el estado de los tacos de las ruedas y la limpieza de la cabina/motor.
        - Si detectas extras de alto valor (Zuidberg, pesas, suspensión), úsalos para justificar un posicionamiento en la banda alta.
-    2. Prioriza anuncios actualizados y tu conocimiento profundo de mercado de España, Francia y Portugal. Solo usa anuncios del resto de Europa si no hay suficiente muestra, pero aplica un factor de corrección 
+    2.- Si la unidad tiene mas de 2000 horas y ves en las fotos protecciones de plastico en palancas o asiento no las tomes como que son de fabrica, eso normalmente se hace
+        para presentar mas pulcredad no es porque las conserve de fabrica.
+    3. Prioriza anuncios actualizados y tu conocimiento profundo de mercado de España, Francia y Portugal. Solo usa anuncios del resto de Europa si no hay suficiente muestra, pero aplica un factor de corrección 
         a la baja del 15% por costes de importación y logística."
-    3. PROCEDIMIENTO ESTADÍSTICO (Media Truncada):
+    4. PROCEDIMIENTO ESTADÍSTICO (Media Truncada):
        - Busca en Agriaffaires, y Milanuncios y si encuentras pocos resultados, usa otros portales de compraventa especializados en el sector. 
        - Toma toda la muestra europea de este modelo y año. Ordena por precio y ELIMINA el 10% más caro y el 10% más barato para limpiar la muestra de anuncios irreales.
 
-    4. CÁLCULO DE VALORES (Lógica Comercial):
+    5. CÁLCULO DE VALORES (Lógica Comercial):
        - PRECIO DE ATERRIZAJE: Es el valor real de mercado basado en la media truncada, ajustado por horas y extras visuales. (Este debe ser vuestro valor de anuncio).
        - PRECIO DE COMPRA (PVP): Sobre el precio de aterrizaje, resta un margen del 15 para cubrir preparación.
 
-    5. En el inicio de la salida no utilices mensajes en cuanto a tus limitaciones como IA, asume tu rol de experto en compraventa de maquinaria con plenos conocimientos de mercado.
+    6. En el inicio de la salida no utilices mensajes en cuanto a tus limitaciones como IA, asume tu rol de experto en compraventa de maquinaria con plenos conocimientos de mercado.
     SALIDA DE DATOS REQUERIDA:
     -TABLA DE ANUNCIOS [Una tabla con pais ciudad año y precio de anuncio]
     - MUESTRA ANALIZADA: [Nº anuncios encontrados en Europa]
