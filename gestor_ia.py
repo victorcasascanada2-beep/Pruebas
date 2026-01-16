@@ -19,12 +19,13 @@ def ejecutar_tasacion_v2(marca, modelo, anio, horas, observaciones, fotos_subida
     1. ANÁLISIS VISUAL FOTO A FOTO:
        - Identifica y resume cada imagen. Busca específicamente el Tripuntal delantero, el estado de los tacos de las ruedas y la limpieza de la cabina/motor.
        - Si detectas extras de alto valor (Zuidberg, pesas, suspensión), úsalos para justificar un posicionamiento en la banda alta.
-
-    2. PROCEDIMIENTO ESTADÍSTICO (Media Truncada):
+    2. Prioriza anuncios de España, Francia y Portugal. Solo usa anuncios del resto de Europa si no hay suficiente muestra, pero aplica un factor de corrección 
+        a la baja del 15% por costes de importación y logística."
+    3. PROCEDIMIENTO ESTADÍSTICO (Media Truncada):
        - Busca en Agriaffaires, Traktorpool, E-FARM y Mascus. 
        - Toma toda la muestra europea de este modelo y año. Ordena por precio y ELIMINA el 10% más caro y el 10% más barato para limpiar la muestra de anuncios irreales.
 
-    3. CÁLCULO DE VALORES (Lógica Comercial):
+    4. CÁLCULO DE VALORES (Lógica Comercial):
        - PRECIO DE ATERRIZAJE: Es el valor real de mercado basado en la media truncada, ajustado por horas y extras visuales. (Este debe ser vuestro valor de anuncio).
        - PRECIO DE COMPRA (PVP): Sobre el precio de aterrizaje, resta un margen del 15 para cubrir preparación.
 
