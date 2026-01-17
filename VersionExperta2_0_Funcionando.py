@@ -2,7 +2,15 @@ import streamlit as st
 import google.generativeai as genai
 from PIL import Image
 import time
-
+# main.py
+st.markdown("""
+    <style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    .stAppDeployButton {display:none;}
+    </style>
+    """, unsafe_allow_status=True)
 def main():
     # 1. Configuración de API
     if "GOOGLE_API_KEY" not in st.secrets:
