@@ -12,7 +12,7 @@ st.markdown("""
     header {visibility: hidden;}
     .stAppDeployButton {display:none;}
     </style>
-    """, unsafe_allow_status=True)
+    """, unsafe_allow_html=True)
 # --- 1. INICIALIZACIÓN DE MEMORIA (Session State) ---
 if 'vendedor' not in st.session_state:
     st.session_state.vendedor = None
