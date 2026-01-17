@@ -13,7 +13,15 @@ import datetime
 # ==========================================
 # Tu clave de Gemini guardada en Streamlit Secrets
 genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
-
+# main.py
+st.markdown("""
+    <style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    .stAppDeployButton {display:none;}
+    </style>
+    """, unsafe_allow_status=True)
 def imagen_a_base64(img_file):
     """Convierte la foto en texto para que viaje dentro del archivo HTML"""
     img = Image.open(img_file)
