@@ -11,8 +11,7 @@ st.markdown("""
     header {visibility: hidden;}
     .stAppDeployButton {display:none;}
     </style>
-    """, unsafe_allow_status=True)
-# --- CONTROL DE ACCESO ---
+    """, unsafe_allow_html=True)
 if 'vendedor' not in st.session_state:
     st.session_state.vendedor = None
 
