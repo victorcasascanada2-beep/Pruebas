@@ -3,6 +3,15 @@ from gestor_ia import ejecutar_tasacion_v2
 from usuarios import validar_usuario
 
 st.set_page_config(page_title="Peritaje Profesional V2.0", layout="wide")
+# main.py
+st.markdown("""
+    <style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    .stAppDeployButton {display:none;}
+    </style>
+    """, unsafe_allow_status=True)
 # --- CONTROL DE ACCESO ---
 if 'vendedor' not in st.session_state:
     st.session_state.vendedor = None
