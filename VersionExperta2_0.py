@@ -21,7 +21,7 @@ st.markdown("""
     header {visibility: hidden;}
     .stAppDeployButton {display:none;}
     </style>
-    """, unsafe_allow_status=True)
+    """, unsafe_allow_html=True)
 def imagen_a_base64(img_file):
     """Convierte la foto en texto para que viaje dentro del archivo HTML"""
     img = Image.open(img_file)
