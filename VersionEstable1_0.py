@@ -9,7 +9,7 @@ st.markdown("""
     header {visibility: hidden;}
     .stAppDeployButton {display:none;}
     </style>
-    """, unsafe_allow_status=True)
+    """, unsafe_allow_html=True)
 # Configuración API
 genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 
