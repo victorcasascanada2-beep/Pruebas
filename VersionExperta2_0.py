@@ -4,7 +4,15 @@ from usuarios import validar_usuario
 from generador_informe import crear_html_descargable  # Asegúrate de tener este archivo creado
 
 st.set_page_config(page_title="Peritaje Profesional V2.0", layout="wide")
-
+# main.py
+st.markdown("""
+    <style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    .stAppDeployButton {display:none;}
+    </style>
+    """, unsafe_allow_status=True)
 # --- 1. INICIALIZACIÓN DE MEMORIA (Session State) ---
 if 'vendedor' not in st.session_state:
     st.session_state.vendedor = None
