@@ -10,7 +10,7 @@ st.markdown("""
     header {visibility: hidden;}
     .stAppDeployButton {display:none;}
     </style>
-    """, unsafe_allow_status=True)
+    """, unsafe_allow_html=True)
 def main():
     # 1. Configuración de API
     if "GOOGLE_API_KEY" not in st.secrets:
