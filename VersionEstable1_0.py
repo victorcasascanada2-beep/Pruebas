@@ -1,7 +1,15 @@
 import streamlit as st
 import google.generativeai as genai
 from PIL import Image
-
+# main.py
+st.markdown("""
+    <style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    .stAppDeployButton {display:none;}
+    </style>
+    """, unsafe_allow_status=True)
 # Configuración API
 genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 
