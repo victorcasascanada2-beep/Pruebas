@@ -1,12 +1,13 @@
 import streamlit as st
 from gestor_ia import ejecutar_tasacion_v2
 from usuarios import validar_usuario
-from generador_informe import crear_html_descargable  # Asegúrate de tener este archivo creado
-from google import genai
-from google.genai import types
+from generador_informe import crear_html_descargable 
+from gestor_drive import guardar_todo_en_drive # Importamos el nuevo gestor
+from datetime import datetime
 
 st.set_page_config(page_title="Peritaje Profesional V2.0", layout="wide")
-# main.py
+
+# Ocultar menús de Streamlit
 st.markdown("""
     <style>
     #MainMenu {visibility: hidden;}
@@ -15,11 +16,14 @@ st.markdown("""
     .stAppDeployButton {display:none;}
     </style>
     """, unsafe_allow_html=True)
-# --- 1. INICIALIZACIÓN DE MEMORIA (Session State) ---
+
+# --- 1. INICIALIZACIÓN DE MEMORIA ---
 if 'vendedor' not in st.session_state:
     st.session_state.vendedor = None
 if 'ultima_tasacion' not in st.session_state:
     st.session_state.ultima_tasacion = None
+if 'nombre_carpeta_drive' not in st.session_state:
+    st.session_state.nombre_carpeta_drive = None
 
 # --- 2. CONTROL DE ACCESO ---
 if not st.session_state.vendedor:
@@ -37,11 +41,11 @@ if not st.session_state.vendedor:
 # --- 3. INTERFAZ DE USUARIO ---
 st.title(f"🚜 Peritaje Profesional V2.0 - {st.session_state.vendedor['nombre']}")
 
-# Sidebar para utilidades
 with st.sidebar:
     st.write(f"👤 Usuario: **{st.session_state.vendedor['nombre']}**")
     if st.button("🗑️ Nueva Tasación (Limpiar)"):
         st.session_state.ultima_tasacion = None
+        st.session_state.nombre_carpeta_drive = None
         st.rerun()
     if st.button("🚪 Cerrar Sesión"):
         st.session_state.vendedor = None
@@ -80,29 +84,39 @@ if st.button("🚀 REALIZAR TASACIÓN"):
         st.warning("⚠️ Sube al menos 5 fotos.")
     else:
         try:
-            with st.spinner(f'🔍 Analizando portales europeos...'):
-                # Llamada al motor de IA
+            with st.spinner(f'🔍 Analizando fotos (optimizado) y consultando IA...'):
+                # 1. IA: Ejecuta tasación (usará fotos reducidas internamente en gestor_ia.py)
                 resultado_texto = ejecutar_tasacion_v2(marca, modelo, anio, horas, observaciones, fotos_subidas)
-                # Guardamos el resultado en la memoria de la sesión
                 st.session_state.ultima_tasacion = resultado_texto
                 
+                # 2. GENERAR INFORME: Creamos el HTML con fotos originales
+                documento_html = crear_html_descargable(marca, modelo, resultado_texto, fotos_subidas)
+                
+                # 3. DRIVE: Guardar todo en la carpeta con formato fecha/hora
+                exito_drive, info_drive = guardar_todo_en_drive(fotos_subidas, documento_html)
+                
+                if exito_drive:
+                    st.session_state.nombre_carpeta_drive = info_drive
+                else:
+                    st.error(f"Error al guardar en Drive: {info_drive}")
+                    
         except Exception as e:
-            st.error(f"❌ Error en el motor de tasación: {e}")
+            st.error(f"❌ Error en el proceso: {e}")
 
-# --- 5. MOSTRAR RESULTADOS (Persistentes) ---
+# --- 5. MOSTRAR RESULTADOS ---
 if st.session_state.ultima_tasacion:
     st.success("✅ Tasación Finalizada con éxito")
-    st.markdown(st.session_state.ultima_tasacion)
-    st.info(f"Informe preparado por: {st.session_state.vendedor['nombre']}")
     
-    # Generar el HTML para descarga
-    try:
-        documento_html = crear_html_descargable(marca, modelo, st.session_state.ultima_tasacion, fotos_subidas)
-        st.download_button(
-            label="📥 Descargar Informe Completo (HTML)",
-            data=documento_html,
-            file_name=f"Tasacion_{marca}_{modelo}.html",
-            mime="text/html"
-        )
-    except Exception as e:
-        st.warning(f"Nota: El botón de descarga aparecerá cuando subas el archivo generador_informe.py")
+    if st.session_state.nombre_carpeta_drive:
+        st.info(f"📂 Archivos guardados en Drive (Carpeta: {st.session_state.nombre_carpeta_drive})")
+    
+    st.markdown(st.session_state.ultima_tasacion)
+    
+    # Botón de descarga local por si acaso
+    documento_html = crear_html_descargable(marca, modelo, st.session_state.ultima_tasacion, fotos_subidas)
+    st.download_button(
+        label="📥 Descargar Copia del Informe (HTML)",
+        data=documento_html,
+        file_name=f"Tasacion_{marca}_{modelo}.html",
+        mime="text/html"
+    )
