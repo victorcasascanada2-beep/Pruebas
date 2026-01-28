@@ -4,6 +4,7 @@ import base64
 def transformar_foto_a_base64(foto):
     """Convierte la imagen de Streamlit a formato Base64 para incrustarla en el HTML"""
     try:
+        foto.seek(0)
         bytes_foto = foto.getvalue()
         encoded = base64.b64encode(bytes_foto).decode()
         return f"data:image/jpeg;base64,{encoded}"
