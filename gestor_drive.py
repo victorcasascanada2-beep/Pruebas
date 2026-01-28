@@ -11,7 +11,7 @@ class GestorDrive:
         creds_dict = st.secrets["gcp_service_account"]
         creds = service_account.Credentials.from_service_account_info(creds_dict)
         self.service = build('drive', 'v3', credentials=creds)
-        self.folder_id_base = "TU_ID_DE_CARPETA_PRINCIPAL" # Pon aquí el ID de la carpeta madre
+        self.folder_id_base = "0AEU0RHjR-mDOUk9PVA" # Pon aquí el ID de la carpeta madre
 
     def crear_carpeta_tasacion(self):
         # Genera el nombre: 280125164033
