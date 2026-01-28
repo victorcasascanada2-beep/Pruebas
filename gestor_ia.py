@@ -34,7 +34,7 @@ def ejecutar_tasacion_v2(marca, modelo, anio, horas, observaciones, fotos_subida
         contenidos.append(Image.open(buf))
     
     try:
-        res = client.models.generate_content(model="gemini-1.5-flash", contents=contenidos)
+        res = client.models.generate_content(model="gemini-2.5-flash-preview-09-2025", contents=contenidos)
         return res.text
     except Exception as e:
         return f"Error en la IA: {e}"
