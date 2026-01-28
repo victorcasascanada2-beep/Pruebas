@@ -2,6 +2,8 @@ import streamlit as st
 from gestor_ia import ejecutar_tasacion_v2
 from usuarios import validar_usuario
 from generador_informe import crear_html_descargable  # Asegúrate de tener este archivo creado
+from google import genai
+from google.genai import types
 
 st.set_page_config(page_title="Peritaje Profesional V2.0", layout="wide")
 # main.py
