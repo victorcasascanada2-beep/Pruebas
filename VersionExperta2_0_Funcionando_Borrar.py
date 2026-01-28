@@ -1,9 +1,6 @@
 import streamlit as st
 from gestor_ia import ejecutar_tasacion_v2
 from usuarios import validar_usuario
-from generador_informe import crear_html_descargable  # Asegúrate de tener este archivo creado
-from google import genai
-from google.genai import types
 
 st.set_page_config(page_title="Peritaje Profesional V2.0", layout="wide")
 # main.py
@@ -15,13 +12,9 @@ st.markdown("""
     .stAppDeployButton {display:none;}
     </style>
     """, unsafe_allow_html=True)
-# --- 1. INICIALIZACIÓN DE MEMORIA (Session State) ---
 if 'vendedor' not in st.session_state:
     st.session_state.vendedor = None
-if 'ultima_tasacion' not in st.session_state:
-    st.session_state.ultima_tasacion = None
 
-# --- 2. CONTROL DE ACCESO ---
 if not st.session_state.vendedor:
     st.title("🚜 Acceso al Sistema")
     codigo = st.text_input("Introduce tu código de empleado")
@@ -34,19 +27,8 @@ if not st.session_state.vendedor:
             st.error("Código incorrecto")
     st.stop()
 
-# --- 3. INTERFAZ DE USUARIO ---
+# --- INTERFAZ ORIGINAL ---
 st.title(f"🚜 Peritaje Profesional V2.0 - {st.session_state.vendedor['nombre']}")
-
-# Sidebar para utilidades
-with st.sidebar:
-    st.write(f"👤 Usuario: **{st.session_state.vendedor['nombre']}**")
-    if st.button("🗑️ Nueva Tasación (Limpiar)"):
-        st.session_state.ultima_tasacion = None
-        st.rerun()
-    if st.button("🚪 Cerrar Sesión"):
-        st.session_state.vendedor = None
-        st.session_state.ultima_tasacion = None
-        st.rerun()
 
 c1, c2, c3, c4 = st.columns(4)
 with c1: marca = st.text_input("Marca*", key="marca_v2")
@@ -72,7 +54,6 @@ if fotos_subidas:
 
 st.divider()
 
-# --- 4. LÓGICA DE EJECUCIÓN ---
 if st.button("🚀 REALIZAR TASACIÓN"):
     if not marca or not modelo or not anio or not horas:
         st.warning("⚠️ Rellena Marca, Modelo y Año.")
@@ -80,29 +61,14 @@ if st.button("🚀 REALIZAR TASACIÓN"):
         st.warning("⚠️ Sube al menos 5 fotos.")
     else:
         try:
-            with st.spinner(f'🔍 Analizando portales europeos...'):
-                # Llamada al motor de IA
+            with st.spinner(f'🔍 {st.session_state.vendedor["nombre"]}, estamos analizando los portales europeos...'):
                 resultado_texto = ejecutar_tasacion_v2(marca, modelo, anio, horas, observaciones, fotos_subidas)
-                # Guardamos el resultado en la memoria de la sesión
-                st.session_state.ultima_tasacion = resultado_texto
                 
+            st.success("✅ Tasación Finalizada con éxito")
+            st.markdown(resultado_texto)
+            
+            # Aquí ya tenemos el nombre del mecánico para el futuro log/drive
+            st.info(f"Informe preparado por: {st.session_state.vendedor['nombre']}")
+            
         except Exception as e:
             st.error(f"❌ Error en el motor de tasación: {e}")
-
-# --- 5. MOSTRAR RESULTADOS (Persistentes) ---
-if st.session_state.ultima_tasacion:
-    st.success("✅ Tasación Finalizada con éxito")
-    st.markdown(st.session_state.ultima_tasacion)
-    st.info(f"Informe preparado por: {st.session_state.vendedor['nombre']}")
-    
-    # Generar el HTML para descarga
-    try:
-        documento_html = crear_html_descargable(marca, modelo, st.session_state.ultima_tasacion, fotos_subidas)
-        st.download_button(
-            label="📥 Descargar Informe Completo (HTML)",
-            data=documento_html,
-            file_name=f"Tasacion_{marca}_{modelo}.html",
-            mime="text/html"
-        )
-    except Exception as e:
-        st.warning(f"Nota: El botón de descarga aparecerá cuando subas el archivo generador_informe.py")
